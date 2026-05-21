@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ TACTIX MANAGER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b14;--bg2:#0d1525;--bg3:#111d35;--card:#0f1a2e;--card2:#152237;--border:#1e3a5f;--accent:#00d4ff;--accent2:#ff6b35;--accent3:#ffd700;--green:#00e676;--red:#ff1744;--purple:#b040fb;--text:#e8f4fd;--text2:#8ab4d4;--text3:#4a7a9b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;overflow-x:hidden;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg2);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+#splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#splash h1{font-family:'Orbitron',sans-serif;font-size:4em;color:var(--accent);text-shadow:0 0 40px var(--accent);animation:pulse 2s infinite;}
+#splash .progress{width:380px;height:4px;background:var(--bg3);border-radius:2px;margin-top:30px;overflow:hidden;}
+#splash .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width 0.15s;border-radius:2px;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+#app{display:none;min-height:100vh;}
+#topbar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;position:sticky;top:0;z-index:100;}
+#topbar .logo{font-family:'Orbitron',sans-serif;color:var(--accent);font-size:1.2em;font-weight:700;}
+#topbar .manager-info{display:flex;align-items:center;gap:16px;}
+#topbar .mgr-stat .val{font-family:'Orbitron',sans-serif;font-size:1em;color:var(--accent3);}
+#topbar .mgr-stat .lbl{font-size:.7em;color:var(--text3);}
+#topbar .date-badge{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-family:'Orbitron',sans-serif;font-size:.8em;color:var(--accent);}
+#sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:56px;left:0;bottom:0;overflow-y:auto;z-index:50;}
+#sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:12px 20px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;color:var(--text2);font-size:1em;font-weight:600;}
+#sidebar .nav-item:hover{background:var(--card);color:var(--text);border-left-color:var(--accent);}
+#sidebar .nav-item.active{background:var(--card);color:var(--accent);border-left-color:var(--accent);}
+#sidebar .nav-section{padding:16px 20px 6px;font-size:.72em;color:var(--text3);text-transform:uppercase;letter-spacing:2px;}
+#sidebar .nav-item .icon{font-size:1.2em;width:22px;}
+#main{margin-left:220px;margin-top:56px;padding:24px;min-height:calc(100vh - 56px);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.4em;letter-spacing:1px;color:var(--accent);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.95em;transition:all .2s;}
+.btn-primary{background:var(--accent);color:#000;}.btn-primary:hover{background:#00b8d9;transform:translateY(-1px);}
+.btn-success{background:var(--green);color:#000;}.btn-success:hover{background:#00c853;}
+.btn-danger{background:var(--red);color:#fff;}.btn-warning{background:var(--accent3);color:#000;}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border);}.btn-secondary:hover{background:var(--card2);}
+.btn-sm{padding:5px 12px;font-size:.82em;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.table{width:100%;border-collapse:collapse;}
+.table th{background:var(--bg3);color:var(--text2);font-size:.78em;text-transform:uppercase;letter-spacing:1px;padding:10px 12px;text-align:left;}
+.table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.table tr:hover td{background:var(--card2);}
+.stat-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.stat-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:680px;width:92%;max-height:88vh;overflow-y:auto;position:relative;}
+.modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.9em;color:var(--accent);margin-bottom:18px;}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text2);font-size:1.4em;cursor:pointer;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:.82em;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1em;}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent);}
+.form-group select option{background:var(--bg2);}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.78em;font-weight:700;}
+.badge-gold{background:rgba(255,215,0,.15);color:var(--accent3);border:1px solid rgba(255,215,0,.3);}
+.badge-blue{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.2);}
+.badge-green{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2);}
+.badge-red{background:rgba(255,23,68,.1);color:var(--red);border:1px solid rgba(255,23,68,.2);}
+.rating-circle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:700;font-size:.85em;border:2px solid;}
+.rating-elite{border-color:var(--accent3);color:var(--accent3);background:rgba(255,215,0,.1);}
+.rating-high{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1);}
+.rating-mid{border-color:var(--green);color:var(--green);background:rgba(0,230,118,.1);}
+.rating-low{border-color:var(--text3);color:var(--text3);background:rgba(74,122,155,.1);}
+#notif{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;gap:8px;}
+.notif-item{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;min-width:260px;max-width:340px;animation:slideIn .3s ease;font-size:.92em;}
+.notif-item.success{border-left:3px solid var(--green);}
+.notif-item.error{border-left:3px solid var(--red);}
+.notif-item.info{border-left:3px solid var(--accent);}
+.notif-item.warning{border-left:3px solid var(--accent3);}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.pitch{background:linear-gradient(180deg,#1a5c1a 0%,#1e6b1e 50%,#1a5c1a 100%);border-radius:12px;padding:20px;border:2px solid #2d8a2d;}
+.pitch-line{border:2px solid rgba(255,255,255,.25);border-radius:6px;padding:10px;min-height:340px;}
+.pitch-row{display:flex;justify-content:space-evenly;padding:6px 0;}
+.player-token{background:var(--card);border:2px solid var(--accent);border-radius:8px;padding:5px 8px;text-align:center;cursor:pointer;transition:all .2s;min-width:74px;}
+.player-token:hover{border-color:var(--accent3);transform:scale(1.05);}
+.player-token .pname{font-size:.75em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px;}
+.player-token .prating{font-family:'Orbitron',sans-serif;font-size:.7em;color:var(--accent3);}
+.match-score{font-family:'Orbitron',sans-serif;font-size:2.8em;color:var(--accent3);text-align:center;}
+.match-event{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.88em;}
+.page{display:none;}.page.active{display:block;}
+.club-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;}
+.club-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.league-table tr.my-club td{background:rgba(0,212,255,.07);font-weight:700;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease;}
+.tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--bg3);border-radius:10px;padding:4px;}
+.tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-weight:700;color:var(--text2);transition:all .2s;font-size:.9em;}
+.tab.active{background:var(--card2);color:var(--accent);}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.player-list-item{display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.player-list-item:hover{background:var(--card2);}
+.offer-card{background:var(--bg3);border:1px solid var(--accent3);border-radius:10px;padding:14px;margin-bottom:12px;position:relative;}
+.offer-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent3);border-radius:10px 0 0 10px;}
+.formation-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.88em;}
+.formation-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.search-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1em;}
+.search-input:focus{outline:none;border-color:var(--accent);}
+.trophy-card{background:var(--card);border:1px solid var(--accent3);border-radius:12px;padding:14px;text-align:center;min-width:110px;}
+.news-item{padding:10px;border-bottom:1px solid var(--border);}
+.news-date{font-size:.76em;color:var(--text3);}
+.finance-positive{color:var(--green);font-weight:700;}.finance-negative{color:var(--red);font-weight:700;}
+.welcome-option{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all .3s;text-align:center;}
+.welcome-option:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,212,255,.15);}
+.difficulty-card{background:var(--bg3);border:2px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;text-align:center;}
+.difficulty-card.selected{border-color:var(--accent);background:rgba(0,212,255,.07);}
+/* AUTH */
+#auth-screen{position:fixed;inset:0;background:var(--bg);z-index:8000;display:flex;align-items:center;justify-content:center;}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:38px;width:400px;text-align:center;}
+.auth-box h2{font-family:'Orbitron',sans-serif;color:var(--accent);font-size:1.8em;margin-bottom:6px;}
+.auth-tabs{display:flex;gap:4px;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:22px;}
+.auth-tab{flex:1;padding:8px;border-radius:8px;cursor:pointer;font-weight:700;color:var(--text2);border:none;background:none;font-family:'Rajdhani',sans-serif;font-size:.95em;transition:all .2s;}
+.auth-tab.active{background:var(--card2);color:var(--accent);}
+/* MULTIPLAYER */
+.league-code-box{font-family:'Orbitron',sans-serif;font-size:1.8em;color:var(--accent3);letter-spacing:6px;text-align:center;padding:14px;background:var(--bg);border-radius:10px;border:2px solid var(--accent3);margin:10px 0;}
+.league-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;transition:all .2s;}
+.league-card:hover{border-color:var(--accent);}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mp-info-box{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(255,107,53,.05));border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.88em;color:var(--text2);line-height:1.7;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <h1>⚽ TACTIX</h1>
+  <p style="font-family:'Orbitron',sans-serif;letter-spacing:3px;color:var(--accent2);margin-top:6px">FOOTBALL MANAGER</p>
+  <div class="progress"><div class="progress-bar" id="prog"></div></div>
+  <p id="load-text" style="margin-top:10px;color:var(--text3);font-size:.88em">Initializing...</p>
+</div>
+
+<div id="auth-screen" style="display:none">
+  <div class="auth-box fade-in">
+    <div style="font-size:2.5em;margin-bottom:6px">⚽</div>
+    <h2>TACTIX MANAGER</h2>
+    <p style="color:var(--text2);margin-bottom:20px;font-size:.9em">Sign in untuk menyimpan progress</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+    <div id="auth-login">
+      <div class="form-group"><label>Username</label><input id="login-user" placeholder="Username kamu" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="form-group"><label>Password</label><input id="login-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()">🚀 Login</button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:8px" onclick="continueAsGuest()">👤 Main Sebagai Tamu</button>
+    </div>
+    <div id="auth-register" style="display:none">
+      <div class="form-group"><label>Username</label><input id="reg-user" placeholder="Pilih username (min 3 karakter)"></div>
+      <div class="form-group"><label>Password</label><input id="reg-pass" type="password" placeholder="Pilih password (min 4 karakter)"></div>
+      <button class="btn btn-success" style="width:100%;justify-content:center;margin-top:6px" onclick="doRegister()">✅ Buat Akun</button>
+    </div>
+    <div id="auth-error" style="color:var(--red);margin-top:10px;font-size:.88em;display:none"></div>
+  </div>
+</div>
+
+<div id="app">
+<div id="topbar">
+  <div class="logo">⚽ TACTIX</div>
+  <div class="manager-info" id="topbar-info"></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="date-badge" id="game-date">Season 2024/25 · W1</div>
+    <div id="user-badge" style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:.82em;color:var(--accent2)"></div>
+  </div>
+</div>
+<div id="sidebar">
+  <div class="nav-section">Club</div>
+  <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="icon">🏠</span>Dashboard</div>
+  <div class="nav-item" onclick="showPage('squad')" id="nav-squad"><span class="icon">👥</span>Squad</div>
+  <div class="nav-item" onclick="showPage('tactics')" id="nav-tactics"><span class="icon">♟️</span>Tactics</div>
+  <div class="nav-item" onclick="showPage('finances')" id="nav-finances"><span class="icon">💰</span>Finances</div>
+  <div class="nav-section">Competition</div>
+  <div class="nav-item" onclick="showPage('fixtures')" id="nav-fixtures"><span class="icon">📅</span>Fixtures</div>
+  <div class="nav-item" onclick="showPage('league')" id="nav-league"><span class="icon">🏆</span>League Table</div>
+  <div class="nav-item" onclick="showPage('tournaments')" id="nav-tournaments"><span class="icon">🥇</span>Tournaments</div>
+  <div class="nav-section">Market</div>
+  <div class="nav-item" onclick="showPage('transfer')" id="nav-transfer"><span class="icon">🔄</span>Transfer Market</div>
+  <div class="nav-item" onclick="showPage('scout')" id="nav-scout"><span class="icon">🔍</span>Scout</div>
+  <div class="nav-section">Multiplayer</div>
+  <div class="nav-item" onclick="showPage('multiplayer')" id="nav-multiplayer"><span class="icon">🌐</span>Liga Online</div>
+  <div class="nav-section">Manager</div>
+  <div class="nav-item" onclick="showPage('manager')" id="nav-manager"><span class="icon">🎖️</span>My Profile</div>
+  <div class="nav-item" onclick="showPage('offers')" id="nav-offers"><span class="icon">📩</span>Job Offers <span id="offer-badge" style="display:none;background:var(--red);border-radius:10px;padding:1px 7px;font-size:.72em;color:#fff;margin-left:auto"></span></div>
+  <div class="nav-item" onclick="showPage('clubs')" id="nav-clubs"><span class="icon">🌍</span>All Clubs</div>
+  <div class="nav-item" onclick="showPage('news')" id="nav-news"><span class="icon">📰</span>News</div>
+  <div class="nav-item" onclick="showPage('help')" id="nav-help"><span class="icon">❓</span>Help</div>
+  <div class="nav-item" onclick="logoutUser()"><span class="icon">🚪</span>Logout</div>
+</div>
+<div id="main">
+
+<!-- WELCOME -->
+<div id="welcome-screen" style="display:none">
+  <div style="max-width:860px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:36px">
+      <h1 style="font-family:'Orbitron',sans-serif;font-size:2.6em;color:var(--accent)">⚽ TACTIX MANAGER</h1>
+      <p style="color:var(--text2);font-size:1.1em;margin-top:8px">Karir manajer sepak bola dimulai dari sini</p>
+    </div>
+    <div class="grid-2" style="gap:20px;max-width:560px;margin:0 auto">
+      <div class="welcome-option" onclick="showSetup('existing')"><div style="font-size:3.5em;margin-bottom:12px">🏟️</div><h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.6em;color:var(--accent)">Ambil Alih Klub</h3><p style="color:var(--text2);font-size:.88em;margin-top:6px">Pilih dari 50+ klub nyata</p></div>
+      <div class="welcome-option" onclick="showSetup('create')"><div style="font-size:3.5em;margin-bottom:12px">✨</div><h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.6em;color:var(--accent)">Buat Klub Baru</h3><p style="color:var(--text2);font-size:.88em;margin-top:6px">Bangun dari nol</p></div>
+    </div>
+    <div style="text-align:center;margin-top:18px">
+      <button class="btn btn-secondary" onclick="loadSaveGame()">📂 Lanjutkan Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP EXISTING -->
+<div id="setup-existing" style="display:none" class="fade-in">
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2.2em;color:var(--accent);margin-bottom:18px">Pilih Klub Kamu</h2>
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <input class="search-input" id="club-search" placeholder="🔍 Cari klub..." oninput="filterClubs()" style="width:230px">
+    <select id="club-league-filter" onchange="filterClubs()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Rajdhani',sans-serif"><option value="">Semua Liga</option></select>
+    <select id="club-country-filter" onchange="filterClubs()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Rajdhani',sans-serif"><option value="">Semua Negara</option></select>
+  </div>
+  <div id="club-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;max-height:58vh;overflow-y:auto"></div>
+  <div style="margin-top:18px"><button class="btn btn-secondary" onclick="backToWelcome()">← Back</button></div>
+</div>
+
+<!-- SETUP CREATE -->
+<div id="setup-create" style="display:none" class="fade-in">
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2.2em;color:var(--accent);margin-bottom:18px">Buat Klub Baru</h2>
+  <div class="grid-2" style="gap:18px">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Identitas Klub</div>
+      <div class="form-group"><label>Nama Klub</label><input id="cc-name" placeholder="e.g. FC Nusantara" oninput="document.getElementById('cc-preview-name').textContent=this.value||'Your Club'"></div>
+      <div class="form-group"><label>Logo (Emoji)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+          <span onclick="selectEmoji('⚽')" style="cursor:pointer;font-size:1.5em">⚽</span><span onclick="selectEmoji('🦁')" style="cursor:pointer;font-size:1.5em">🦁</span><span onclick="selectEmoji('🦅')" style="cursor:pointer;font-size:1.5em">🦅</span><span onclick="selectEmoji('🐉')" style="cursor:pointer;font-size:1.5em">🐉</span><span onclick="selectEmoji('⭐')" style="cursor:pointer;font-size:1.5em">⭐</span><span onclick="selectEmoji('🔥')" style="cursor:pointer;font-size:1.5em">🔥</span><span onclick="selectEmoji('⚡')" style="cursor:pointer;font-size:1.5em">⚡</span><span onclick="selectEmoji('🌙')" style="cursor:pointer;font-size:1.5em">🌙</span><span onclick="selectEmoji('🦊')" style="cursor:pointer;font-size:1.5em">🦊</span><span onclick="selectEmoji('🐺')" style="cursor:pointer;font-size:1.5em">🐺</span>
+        </div>
+        <input id="cc-logo" placeholder="atau ketik emoji sendiri" maxlength="4" oninput="document.getElementById('cc-preview-logo').textContent=this.value||'⚽'">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Stadion & Liga</div>
+      <div class="form-group"><label>Nama Stadion</label><input id="cc-stadium" placeholder="e.g. Gelora Nusantara"></div>
+      <div class="form-group"><label>Kapasitas</label><input id="cc-capacity" type="number" value="30000" min="5000" max="120000"></div>
+      <div class="form-group"><label>Negara</label><select id="cc-country"></select></div>
+      <div class="form-group"><label>Liga</label><select id="cc-league"></select></div>
+      <div class="form-group"><label>Starting Budget</label>
+        <select id="cc-budget"><option value="5000000">€5M - Klub Kecil</option><option value="20000000" selected>€20M - Menengah</option><option value="50000000">€50M - Besar</option><option value="100000000">€100M - Tajir</option></select>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:2.5em" id="cc-preview-logo">⚽</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3em" id="cc-preview-name">Your Club</div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-title" style="margin-bottom:14px">Profil Manajer</div>
+    <div class="grid-3" style="gap:14px">
+      <div class="form-group"><label>Nama Kamu</label><input id="mgr-name" placeholder="Nama Manajer"></div>
+      <div class="form-group"><label>Kebangsaan</label><select id="mgr-nation"></select></div>
+      <div class="form-group"><label>Kesulitan</label>
+        <div style="display:flex;gap:6px">
+          <div class="difficulty-card selected" onclick="selectDiff(this,'easy')" style="flex:1"><div>😊</div><div style="font-size:.78em">Easy</div></div>
+          <div class="difficulty-card" onclick="selectDiff(this,'normal')" style="flex:1"><div>😐</div><div style="font-size:.78em">Normal</div></div>
+          <div class="difficulty-card" onclick="selectDiff(this,'hard')" style="flex:1"><div>😤</div><div style="font-size:.78em">Hard</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:18px;display:flex;gap:10px">
+    <button class="btn btn-secondary" onclick="backToWelcome()">← Back</button>
+    <button class="btn btn-primary" onclick="startNewGame('create')" style="font-size:1.05em">🚀 Mulai Karir!</button>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div id="page-dashboard" class="page active fade-in"><div id="dashboard-content"></div></div>
+<div id="page-squad" class="page fade-in">
+  <div class="card-header">
+    <div class="card-title">📋 Squad Saya</div>
+    <div style="display:flex;gap:8px">
+      <input class="search-input" id="squad-search" placeholder="🔍 Cari pemain..." oninput="filterSquad()" style="width:190px">
+      <select id="squad-pos-filter" onchange="filterSquad()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'Rajdhani',sans-serif">
+        <option value="">Semua Pos</option><option value="GK">GK</option><option value="DEF">DEF</option><option value="MID">MID</option><option value="ATT">ATT</option>
+      </select>
+    </div>
+  </div>
+  <div id="squad-content"></div>
+</div>
+<div id="page-tactics" class="page fade-in"><div id="tactics-content"></div></div>
+<div id="page-finances" class="page fade-in"><div id="finances-content"></div></div>
+<div id="page-fixtures" class="page fade-in"><div id="fixtures-content"></div></div>
+<div id="page-league" class="page fade-in"><div id="league-content"></div></div>
+<div id="page-tournaments" class="page fade-in"><div id="tournaments-content"></div></div>
+<div id="page-transfer" class="page fade-in"><div id="transfer-content"></div></div>
+<div id="page-scout" class="page fade-in"><div id="scout-content"></div></div>
+<div id="page-manager" class="page fade-in"><div id="manager-content"></div></div>
+<div id="page-offers" class="page fade-in"><div id="offers-content"></div></div>
+<div id="page-clubs" class="page fade-in"><div id="clubs-content"></div></div>
+<div id="page-news" class="page fade-in"><div id="news-content"></div></div>
+<div id="page-help" class="page fade-in"><div id="help-content"></div></div>
+<div id="page-multiplayer" class="page fade-in"><div id="multiplayer-content"></div></div>
+</div></div>
+
+<div id="modal-container"></div>
+<div id="notif"></div>
+
+<script>
+// ============================================================
+// AUTH (localStorage per-user)
+// ============================================================
+let currentUser = null;
+function getUsers(){try{return JSON.parse(localStorage.getItem('tx_users')||'{}');}catch(e){return{};}}
+function saveUsers(u){localStorage.setItem('tx_users',JSON.stringify(u));}
+function switchAuthTab(t){
+  document.getElementById('auth-login').style.display=t==='login'?'block':'none';
+  document.getElementById('auth-register').style.display=t==='register'?'block':'none';
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+  document.getElementById('auth-error').style.display='none';
+}
+function showAuthErr(m){const e=document.getElementById('auth-error');e.textContent=m;e.style.display='block';}
+function doLogin(){
+  const u=(document.getElementById('login-user').value||'').trim();
+  const p=document.getElementById('login-pass').value;
+  if(!u||!p){showAuthErr('Isi username dan password!');return;}
+  const users=getUsers();
+  if(!users[u]){showAuthErr('Username tidak ditemukan!');return;}
+  if(users[u].pw!==btoa(p)){showAuthErr('Password salah!');return;}
+  currentUser=u;localStorage.setItem('tx_cu',u);
+  hideAuth();showNotif('Selamat datang kembali, '+u+'! 👋','success');
+}
+function doRegister(){
+  const u=(document.getElementById('reg-user').value||'').trim();
+  const p=document.getElementById('reg-pass').value;
+  if(!u||!p){showAuthErr('Isi semua field!');return;}
+  if(u.length<3){showAuthErr('Username minimal 3 karakter!');return;}
+  if(p.length<4){showAuthErr('Password minimal 4 karakter!');return;}
+  const users=getUsers();
+  if(users[u]){showAuthErr('Username sudah dipakai!');return;}
+  users[u]={pw:btoa(p),created:Date.now()};saveUsers(users);
+  currentUser=u;localStorage.setItem('tx_cu',u);
+  hideAuth();showNotif('Akun berhasil dibuat! Selamat datang, '+u+'! 🎉','success');
+}
+function continueAsGuest(){
+  currentUser='tamu_'+Math.random().toString(36).slice(2,7);
+  localStorage.setItem('tx_cu',currentUser);
+  hideAuth();showNotif('Main sebagai tamu. Multiplayer terbatas.','warning');
+}
+function hideAuth(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  const b=document.getElementById('user-badge');
+  if(b) b.textContent=(currentUser.startsWith('tamu_')?'👤 Tamu':'👤 '+currentUser);
+}
+function logoutUser(){
+  if(G.initialized)saveGame();
+  currentUser=null;localStorage.removeItem('tx_cu');
+  G=defaultG();
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+}
+function getSaveKey(){return 'tx_save_'+currentUser;}
+
+// ============================================================
+// MULTIPLAYER — localStorage-based (works offline/same device)
+// + Optional Firebase untuk lintas perangkat
+// ============================================================
+
+// ===== FIREBASE OPTIONAL SETUP =====
+// Untuk lintas perangkat: isi firebaseConfig di bawah.
+// Cara dapat config: console.firebase.google.com → New Project
+// → Realtime Database → Create → Test Mode → Project Settings → Web App
+// Kalau belum diisi, multiplayer pakai localStorage (same device only).
+
+const FIREBASE_CONFIG = null; 
+// Contoh isi:
+// const FIREBASE_CONFIG = {
+//   apiKey: "AIza...",
+//   databaseURL: "https://nama-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+//   projectId: "nama-project",
+// };
+
+let firebaseDB = null;
+let firebaseReady = false;
+
+async function initFirebase(){
+  if(!FIREBASE_CONFIG){firebaseReady=false;return;}
+  try{
+    const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const {getDatabase,ref,set,get,update,onValue,remove}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    const app=initializeApp(FIREBASE_CONFIG);
+    firebaseDB={db:getDatabase(app),ref,set,get,update,onValue,remove};
+    firebaseReady=true;
+    console.log('Firebase ready ✓');
+  }catch(e){
+    console.warn('Firebase gagal load:',e);
+    firebaseReady=false;
+  }
+}
+
+// === STORAGE LAYER: otomatis pilih Firebase atau localStorage ===
+function getMLStorage(){
+  try{return JSON.parse(localStorage.getItem('tx_ml')||'{}');}catch(e){return{};}
+}
+function saveMLStorage(d){localStorage.setItem('tx_ml',JSON.stringify(d));}
+
+// Buat atau update liga — support Firebase + localStorage fallback
+async function mlSet(code, data){
+  if(firebaseReady && firebaseDB){
+    const {db,ref,set}=firebaseDB;
+    await set(ref(db,'tx_leagues/'+code), data);
+  }
+  // Selalu simpan juga ke localStorage sebagai cache
+  const ml=getMLStorage();
+  ml[code]=data;
+  saveMLStorage(ml);
+}
+
+async function mlGet(code){
+  if(firebaseReady && firebaseDB){
+    const {db,ref,get}=firebaseDB;
+    const snap=await get(ref(db,'tx_leagues/'+code));
+    if(snap.exists()){
+      const d=snap.val();
+      // Update cache
+      const ml=getMLStorage();ml[code]=d;saveMLStorage(ml);
+      return d;
+    }
+    return null;
+  }
+  const ml=getMLStorage();
+  return ml[code]||null;
+}
+
+async function mlGetAll(){
+  if(firebaseReady && firebaseDB){
+    const {db,ref,get}=firebaseDB;
+    const snap=await get(ref(db,'tx_leagues'));
+    if(snap.exists()) return snap.val();
+    return {};
+  }
+  return getMLStorage();
+}
+
+async function mlUpdatePlayer(code, username, playerData){
+  if(firebaseReady && firebaseDB){
+    const {db,ref,update}=firebaseDB;
+    const updates={};
+    updates['tx_leagues/'+code+'/players/'+username]=playerData;
+    await update(ref(db), updates);
+  }
+  const ml=getMLStorage();
+  if(ml[code]){
+    if(!ml[code].players) ml[code].players={};
+    ml[code].players[username]=playerData;
+    saveMLStorage(ml);
+  }
+}
+
+async function mlRemove(code){
+  if(firebaseReady && firebaseDB){
+    const {db,ref,remove}=firebaseDB;
+    await remove(ref(db,'tx_leagues/'+code));
+  }
+  const ml=getMLStorage();
+  delete ml[code];saveMLStorage(ml);
+}
+
+async function mlRemovePlayer(code, username){
+  if(firebaseReady && firebaseDB){
+    const {db,ref,remove}=firebaseDB;
+    await remove(ref(db,'tx_leagues/'+code+'/players/'+username));
+  }
+  const ml=getMLStorage();
+  if(ml[code]&&ml[code].players) delete ml[code].players[username];
+  saveMLStorage(ml);
+}
+
+// ============================================================
+// TOMBOL CREATE LIGA — FIXED
+// ============================================================
+async function createMultiLeague(){
+  // Ambil nilai langsung dari DOM
+  const nameEl = document.getElementById('ml-name');
+  const maxEl  = document.getElementById('ml-maxplayers');
+
+  if(!nameEl){showNotif('Error: form tidak ditemukan. Refresh halaman.','error');return;}
+
+  const leagueName = (nameEl.value||'').trim();
+  const maxPlayers = parseInt(maxEl ? maxEl.value : '8') || 8;
+
+  // Validasi
+  if(!leagueName){
+    showNotif('⚠️ Masukkan nama liga dulu!','error');
+    nameEl.focus();
+    nameEl.style.borderColor='var(--red)';
+    setTimeout(()=>{nameEl.style.borderColor='';},2000);
+    return;
+  }
+  if(!G.initialized){showNotif('⚠️ Mulai karir dulu sebelum buat liga!','error');return;}
+  if(currentUser.startsWith('tamu_')){showNotif('⚠️ Buat akun dulu untuk fitur multiplayer!','warning');return;}
+
+  // Generate kode unik
+  const code = Math.random().toString(36).slice(2,8).toUpperCase();
+
+  const leagueData = {
+    code, name: leagueName,
+    creator: currentUser,
+    maxPlayers,
+    createdAt: Date.now(),
+    status: 'open',
+    players: {}
+  };
+  leagueData.players[currentUser] = buildPlayerEntry();
+
+  try{
+    // Disable tombol supaya tidak double-click
+    const btn=document.getElementById('btn-create-liga');
+    if(btn){btn.disabled=true;btn.textContent='⏳ Creating...';}
+
+    await mlSet(code, leagueData);
+
+    // Simpan kode liga milik user ini
+    localStorage.setItem('tx_my_league_'+currentUser, code);
+
+    showNotif('🎉 Liga "'+leagueName+'" berhasil dibuat! Kode: '+code,'success');
+    renderPage('multiplayer');
+  }catch(err){
+    showNotif('Gagal buat liga: '+err.message,'error');
+    const btn=document.getElementById('btn-create-liga');
+    if(btn){btn.disabled=false;btn.textContent='🚀 Buat Liga Sekarang';}
+  }
+}
+
+// ============================================================
+// JOIN LIGA — FIXED
+// ============================================================
+async function joinMultiLeague(){
+  const codeEl=document.getElementById('ml-join-code');
+  if(!codeEl){showNotif('Error: form tidak ditemukan.','error');return;}
+  const code=(codeEl.value||'').trim().toUpperCase();
+
+  if(code.length<4){
+    showNotif('⚠️ Masukkan kode liga yang valid (6 karakter)!','error');
+    codeEl.focus();return;
+  }
+  if(!G.initialized){showNotif('⚠️ Mulai karir dulu!','error');return;}
+  if(currentUser.startsWith('tamu_')){showNotif('⚠️ Buat akun dulu untuk multiplayer!','warning');return;}
+
+  const btn=document.getElementById('btn-join-liga');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Joining...';}
+
+  try{
+    const league = await mlGet(code);
+
+    if(!league){
+      showNotif('❌ Liga tidak ditemukan! Cek kodenya.','error');
+      if(btn){btn.disabled=false;btn.textContent='✅ Join Liga';}
+      return;
+    }
+    if(league.status!=='open'){showNotif('Liga sudah ditutup.','error');if(btn){btn.disabled=false;btn.textContent='✅ Join Liga';}return;}
+    const pCount=Object.keys(league.players||{}).length;
+    if(pCount>=league.maxPlayers){showNotif('Liga sudah penuh!','error');if(btn){btn.disabled=false;btn.textContent='✅ Join Liga';}return;}
+    if(league.players&&league.players[currentUser]){showNotif('Kamu sudah ada di liga ini!','warning');if(btn){btn.disabled=false;btn.textContent='✅ Join Liga';}return;}
+
+    await mlUpdatePlayer(code, currentUser, buildPlayerEntry());
+    localStorage.setItem('tx_my_league_'+currentUser, code);
+
+    showNotif('✅ Berhasil join liga "'+league.name+'"!','success');
+    renderPage('multiplayer');
+  }catch(err){
+    showNotif('Gagal join: '+err.message,'error');
+    if(btn){btn.disabled=false;btn.textContent='✅ Join Liga';}
+  }
+}
+
+// ============================================================
+// UPDATE STATS KE LIGA
+// ============================================================
+async function submitWeeklyResult(code){
+  if(!G.initialized){showNotif('Mulai karir dulu!','error');return;}
+  const btn=document.getElementById('btn-update-stats');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Updating...';}
+  try{
+    await mlUpdatePlayer(code, currentUser, buildPlayerEntry());
+    showNotif('📊 Stats kamu berhasil diperbarui di liga!','success');
+  }catch(err){
+    showNotif('Gagal update: '+err.message,'error');
+  }
+  if(btn){btn.disabled=false;btn.textContent='📤 Update Stats Saya';}
+  renderPage('multiplayer');
+}
+
+function buildPlayerEntry(){
+  return {
+    username: currentUser,
+    clubName: G.myClub?G.myClub.name:'Unknown',
+    clubLogo: G.myClub?G.myClub.logo:'⚽',
+    clubRating: G.myClub?G.myClub.rating:60,
+    managerRating: Math.round(G.managerRating||50),
+    pts: (G.stats.wins||0)*3+(G.stats.draws||0),
+    w: G.stats.wins||0, d: G.stats.draws||0, l: G.stats.losses||0,
+    gf: G.stats.goalsFor||0, ga: G.stats.goalsAgainst||0,
+    gd: (G.stats.goalsFor||0)-(G.stats.goalsAgainst||0),
+    p: (G.stats.wins||0)+(G.stats.draws||0)+(G.stats.losses||0),
+    trophies: G.trophies?G.trophies.length:0,
+    season: G.season||1, week: G.week||1,
+    updatedAt: Date.now()
+  };
+}
+
+async function leaveLeague(code){
+  if(!confirm('Yakin mau keluar dari liga?')) return;
+  try{
+    const league=await mlGet(code);
+    if(league && league.creator===currentUser){
+      await mlRemove(code);
+      showNotif('Liga dihapus.','info');
+    } else {
+      await mlRemovePlayer(code, currentUser);
+      showNotif('Kamu keluar dari liga.','info');
+    }
+    localStorage.removeItem('tx_my_league_'+currentUser);
+    renderPage('multiplayer');
+  }catch(err){showNotif('Error: '+err.message,'error');}
+}
+
+// ============================================================
+// RENDER MULTIPLAYER — FIXED (tidak bergantung Firebase)
+// ============================================================
+async function renderMultiplayer(){
+  const el=document.getElementById('multiplayer-content');
+  el.innerHTML='<div style="text-align:center;padding:30px"><span class="spinner"></span> Memuat...</div>';
+
+  const myCode=localStorage.getItem('tx_my_league_'+currentUser)||null;
+  const isFirebase=firebaseReady&&!!FIREBASE_CONFIG;
+
+  // Status bar
+  const statusHtml='<div style="background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.82em;color:var(--text2);display:flex;align-items:center;gap:8px">'+
+    (isFirebase?'<span style="color:var(--green)">🟢 Firebase aktif — data tersinkron lintas perangkat!</span>':
+    '<span style="color:var(--accent3)">🟡 Mode lokal (satu perangkat). Untuk lintas perangkat, isi FIREBASE_CONFIG di script.</span>')+'</div>';
+
+  const tabsHtml='<div class="tabs">'+
+    '<div class="tab '+(myCode?'active':'')+'" id="mp-tab-my" onclick="switchMpTab(\'my\')">🌐 Liga Saya</div>'+
+    '<div class="tab '+(myCode?'':'active')+'" id="mp-tab-create" onclick="switchMpTab(\'create\')">➕ Buat Liga</div>'+
+    '<div class="tab" id="mp-tab-join" onclick="switchMpTab(\'join\')">🔑 Join Liga</div>'+
+    '</div>';
+
+  // Panel BUAT LIGA
+  const createPanel='<div id="mp-create" class="fade-in" style="display:'+(myCode?'none':'block')+'">'+
+    '<div class="card">'+
+    '<div class="card-title" style="margin-bottom:16px">➕ Buat Liga Baru</div>'+
+    '<div class="mp-info-box">'+
+    '📌 Setelah buat liga, bagikan <strong>kode 6 karakter</strong> ke teman kamu.<br>'+
+    (isFirebase?'✅ Firebase aktif → teman bisa join dari perangkat lain!':'⚠️ Mode lokal → teman harus di browser yang sama. Untuk beda perangkat, isi FIREBASE_CONFIG.')+
+    '</div>'+
+    '<div class="form-group"><label>Nama Liga *</label><input id="ml-name" placeholder="e.g. Liga Persahabatan Nusantara 2025" style="font-size:1em"></div>'+
+    '<div class="form-group"><label>Maksimal Pemain</label>'+
+    '<select id="ml-maxplayers" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);width:100%;font-family:\'Rajdhani\',sans-serif">'+
+    '<option value="4">4 Pemain</option><option value="8" selected>8 Pemain</option><option value="16">16 Pemain</option><option value="32">32 Pemain</option></select></div>'+
+    '<button id="btn-create-liga" class="btn btn-primary" onclick="createMultiLeague()" style="width:100%;justify-content:center;font-size:1.05em;padding:12px">🚀 Buat Liga Sekarang</button>'+
+    '</div></div>';
+
+  // Panel JOIN
+  const joinPanel='<div id="mp-join" style="display:none" class="fade-in">'+
+    '<div class="card" style="margin-bottom:14px">'+
+    '<div class="card-title" style="margin-bottom:14px">🔑 Join Liga dengan Kode</div>'+
+    '<div class="form-group"><label>Kode Liga (6 karakter)</label>'+
+    '<input id="ml-join-code" placeholder="Contoh: AB1C2D" maxlength="8" style="text-transform:uppercase;letter-spacing:5px;font-family:\'Orbitron\',sans-serif;font-size:1.3em;text-align:center" oninput="this.value=this.value.toUpperCase()"></div>'+
+    '<button id="btn-join-liga" class="btn btn-success" onclick="joinMultiLeague()" style="width:100%;justify-content:center;font-size:1.05em;padding:12px">✅ Join Liga Sekarang</button>'+
+    '</div>'+
+    '<div id="mp-public-list" class="card"><div class="card-title" style="margin-bottom:12px">🌐 Liga Tersedia</div><div style="color:var(--text3);text-align:center;padding:14px"><span class="spinner"></span> Memuat...</div></div>'+
+    '</div>';
+
+  // Panel LIGA SAYA
+  let myPanel='<div id="mp-my" style="display:'+(myCode?'block':'none')+'" class="fade-in"></div>';
+
+  el.innerHTML=statusHtml+tabsHtml+myPanel+createPanel+joinPanel;
+
+  // Load liga saya
+  if(myCode){
+    renderMyLeague(myCode);
+  }
+
+  // Load public leagues
+  loadPublicLeagues();
+}
+
+async function renderMyLeague(code){
+  const myDiv=document.getElementById('mp-my');
+  if(!myDiv) return;
+
+  try{
+    const league=await mlGet(code);
+    if(!league){
+      localStorage.removeItem('tx_my_league_'+currentUser);
+      myDiv.innerHTML='<div class="card" style="text-align:center;padding:30px;color:var(--text3)">Liga tidak ditemukan atau sudah dihapus.<br><button class="btn btn-secondary" style="margin-top:12px" onclick="localStorage.removeItem(\'tx_my_league_\'+currentUser);renderPage(\'multiplayer\')">Keluar</button></div>';
+      return;
+    }
+
+    const players=Object.values(league.players||{}).sort((a,b)=>b.pts-a.pts||(b.gd||0)-(a.gd||0));
+    const isCreator=league.creator===currentUser;
+
+    myDiv.innerHTML=
+      '<div class="card" style="margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">'+
+      '<div>'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.9em;color:var(--accent)">'+league.name+'</div>'+
+      '<div style="color:var(--text2);font-size:.88em">Creator: <strong>'+league.creator+'</strong> • '+players.length+'/'+league.maxPlayers+' pemain • '+(league.status==='open'?'🟢 Terbuka':'🔴 Tertutup')+'</div>'+
+      '</div>'+
+      '<div style="text-align:center">'+
+      '<div style="color:var(--text3);font-size:.8em;margin-bottom:4px">Kode Undangan:</div>'+
+      '<div class="league-code-box">'+league.code+'</div>'+
+      '<button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(\''+league.code+'\').then(()=>showNotif(\'Kode disalin! 📋\',\'success\'))">📋 Copy Kode</button>'+
+      '</div></div></div>'+
+
+      '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">'+
+      '<div class="card-title">🏆 Klasemen Liga</div>'+
+      '<button id="btn-update-stats" class="btn btn-primary btn-sm" onclick="submitWeeklyResult(\''+league.code+'\')">📤 Update Stats Saya</button>'+
+      '</div>'+
+      '<div style="overflow-x:auto">'+
+      '<table class="table">'+
+      '<thead><tr><th>#</th><th>Manajer</th><th>Klub</th><th>Mgr⭐</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Update</th></tr></thead>'+
+      '<tbody>'+players.map((p,i)=>{
+        const isMe=p.username===currentUser;
+        const minsAgo=p.updatedAt?Math.round((Date.now()-p.updatedAt)/60000):9999;
+        const freshness=minsAgo<5?'<span style="color:var(--green)">🟢 Baru</span>':minsAgo<60?'<span style="color:var(--accent3)">🟡 '+minsAgo+'m</span>':'<span style="color:var(--text3)">⚪ Lama</span>';
+        const medal=i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+        return '<tr style="'+(isMe?'background:rgba(0,212,255,.07);font-weight:700':'')+'">'+
+          '<td style="color:'+(i<3?'var(--accent3)':'var(--text3)')+'">'+medal+(i+1)+'</td>'+
+          '<td>'+p.username+(isMe?' 🎖️':'')+'</td>'+
+          '<td>'+(p.clubLogo||'⚽')+' '+(p.clubName||'?')+'</td>'+
+          '<td style="color:var(--accent)">'+(p.managerRating||50)+'</td>'+
+          '<td>'+(p.p||0)+'</td>'+
+          '<td style="color:var(--green)">'+(p.w||0)+'</td>'+
+          '<td>'+(p.d||0)+'</td>'+
+          '<td style="color:var(--red)">'+(p.l||0)+'</td>'+
+          '<td>'+(p.gf||0)+'</td><td>'+(p.ga||0)+'</td>'+
+          '<td style="color:'+((p.gd||0)>=0?'var(--green)':'var(--red)')+'">'+((p.gd||0)>=0?'+':'')+( p.gd||0)+'</td>'+
+          '<td style="font-family:\'Orbitron\',sans-serif;font-weight:700;color:var(--accent3)">'+(p.pts||0)+'</td>'+
+          '<td>'+freshness+'</td>'+
+          '</tr>';
+      }).join('')+'</tbody></table></div>'+
+      '<div style="margin-top:12px;background:var(--bg3);border-radius:8px;padding:10px;font-size:.82em;color:var(--text2)">'+
+      'ℹ️ Klik <strong style="color:var(--accent)">Update Stats Saya</strong> setelah bermain untuk memperbarui posisi kamu di klasemen.</div></div>'+
+
+      '<div style="margin-top:12px">'+
+      (isCreator?'<button class="btn btn-danger btn-sm" onclick="leaveLeague(\''+league.code+'\')">🗑️ Hapus Liga</button>':
+      '<button class="btn btn-secondary btn-sm" onclick="leaveLeague(\''+league.code+'\')">🚪 Keluar dari Liga</button>')+
+      '</div>';
+  }catch(err){
+    if(myDiv) myDiv.innerHTML='<div class="card" style="color:var(--red)">Error memuat liga: '+err.message+'</div>';
+  }
+}
+
+async function loadPublicLeagues(){
+  const el=document.getElementById('mp-public-list');
+  if(!el) return;
+  try{
+    const all=await mlGetAll();
+    const open=Object.values(all).filter(l=>l&&l.status==='open'&&Object.keys(l.players||{}).length<(l.maxPlayers||8));
+    if(!open.length){
+      el.innerHTML='<div class="card-title" style="margin-bottom:12px">🌐 Liga Tersedia</div><div style="color:var(--text3);text-align:center;padding:14px">Tidak ada liga publik saat ini.</div>';
+      return;
+    }
+    el.innerHTML='<div class="card-title" style="margin-bottom:12px">🌐 Liga Tersedia</div>'+
+      open.slice(0,8).map(l=>'<div class="league-card" onclick="document.getElementById(\'ml-join-code\').value=\''+l.code+'\'">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div><div style="font-weight:700">'+l.name+'</div>'+
+        '<div style="color:var(--text2);font-size:.82em">oleh '+l.creator+' • '+Object.keys(l.players||{}).length+'/'+l.maxPlayers+' pemain</div></div>'+
+        '<div class="league-code-box" style="font-size:1em;padding:6px 14px;margin:0">'+l.code+'</div></div></div>'
+      ).join('');
+  }catch(err){
+    if(el) el.innerHTML='<div class="card-title" style="margin-bottom:12px">🌐 Liga Tersedia</div><div style="color:var(--text3);text-align:center;padding:14px">Gagal memuat liga.</div>';
+  }
+}
+
+function switchMpTab(t){
+  ['my','create','join'].forEach(k=>{
+    const el=document.getElementById('mp-'+k);
+    const tab=document.getElementById('mp-tab-'+k);
+    if(el) el.style.display=k===t?'block':'none';
+    if(tab) tab.classList.toggle('active',k===t);
+  });
+}
+
+// ============================================================
+// GAME DATA
+// ============================================================
+const LEAGUES=[
+  {id:'epl',name:'Premier League',country:'England',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {id:'laliga',name:'La Liga',country:'Spain',flag:'🇪🇸'},
+  {id:'bundesliga',name:'Bundesliga',country:'Germany',flag:'🇩🇪'},
+  {id:'seriea',name:'Serie A',country:'Italy',flag:'🇮🇹'},
+  {id:'ligue1',name:'Ligue 1',country:'France',flag:'🇫🇷'},
+  {id:'eredivisie',name:'Eredivisie',country:'Netherlands',flag:'🇳🇱'},
+  {id:'primeira',name:'Primeira Liga',country:'Portugal',flag:'🇵🇹'},
+  {id:'superlig',name:'Süper Lig',country:'Turkey',flag:'🇹🇷'},
+  {id:'brasileirao',name:'Brasileirão',country:'Brazil',flag:'🇧🇷'},
+  {id:'argprimera',name:'Primera División',country:'Argentina',flag:'🇦🇷'},
+  {id:'liga1mex',name:'Liga MX',country:'Mexico',flag:'🇲🇽'},
+  {id:'mls',name:'MLS',country:'USA',flag:'🇺🇸'},
+  {id:'jleague',name:'J1 League',country:'Japan',flag:'🇯🇵'},
+  {id:'saudipl',name:'Saudi Pro League',country:'Saudi Arabia',flag:'🇸🇦'},
+  {id:'liga1ind',name:'Liga 1',country:'Indonesia',flag:'🇮🇩'},
+];
+const NATIONALITIES=['Indonesia','Inggris','Spanyol','Jerman','Prancis','Italia','Portugal','Brasil','Argentina','Belanda','Belgia','Amerika Serikat','Jepang','Korea Selatan','Arab Saudi','Mesir','Turki','Meksiko','Kolombia','Australia'];
+const CLUBS_DATA=[
+  {id:'mancity',name:'Manchester City',country:'England',league:'epl',logo:'🩵',rating:95,fans:55000000,budget:300000000,wage:2500000,stadium:'Etihad Stadium',capacity:53400},
+  {id:'arsenal',name:'Arsenal',country:'England',league:'epl',logo:'🔴',rating:91,fans:45000000,budget:200000000,wage:2200000,stadium:'Emirates Stadium',capacity:60260},
+  {id:'liverpool',name:'Liverpool',country:'England',league:'epl',logo:'🦅',rating:92,fans:60000000,budget:220000000,wage:2300000,stadium:'Anfield',capacity:61276},
+  {id:'chelsea',name:'Chelsea',country:'England',league:'epl',logo:'🔵',rating:87,fans:38000000,budget:250000000,wage:2100000,stadium:'Stamford Bridge',capacity:40343},
+  {id:'manutd',name:'Manchester United',country:'England',league:'epl',logo:'🔴',rating:85,fans:75000000,budget:180000000,wage:2000000,stadium:'Old Trafford',capacity:74879},
+  {id:'tottenham',name:'Tottenham Hotspur',country:'England',league:'epl',logo:'🐓',rating:84,fans:28000000,budget:150000000,wage:1800000,stadium:'Tottenham Hotspur Stadium',capacity:62850},
+  {id:'newcastle',name:'Newcastle United',country:'England',league:'epl',logo:'⚫',rating:83,fans:32000000,budget:200000000,wage:1700000,stadium:"St. James' Park",capacity:52305},
+  {id:'astonvilla',name:'Aston Villa',country:'England',league:'epl',logo:'🟣',rating:84,fans:25000000,budget:130000000,wage:1600000,stadium:'Villa Park',capacity:42682},
+  {id:'brighton',name:'Brighton & Hove Albion',country:'England',league:'epl',logo:'💙',rating:82,fans:18000000,budget:100000000,wage:1200000,stadium:'Amex Stadium',capacity:31876},
+  {id:'westham',name:'West Ham United',country:'England',league:'epl',logo:'🫐',rating:78,fans:22000000,budget:80000000,wage:1100000,stadium:'London Stadium',capacity:60000},
+  {id:'wolves',name:'Wolverhampton Wanderers',country:'England',league:'epl',logo:'🟡',rating:77,fans:15000000,budget:70000000,wage:1000000,stadium:'Molineux',capacity:32050},
+  {id:'leicester',name:'Leicester City',country:'England',league:'epl',logo:'🦊',rating:75,fans:18000000,budget:70000000,wage:900000,stadium:'King Power Stadium',capacity:32312},
+  {id:'realmadrid',name:'Real Madrid',country:'Spain',league:'laliga',logo:'👑',rating:97,fans:120000000,budget:400000000,wage:3000000,stadium:'Santiago Bernabéu',capacity:81044},
+  {id:'barcelona',name:'FC Barcelona',country:'Spain',league:'laliga',logo:'🔵🔴',rating:90,fans:110000000,budget:180000000,wage:2500000,stadium:'Spotify Camp Nou',capacity:99354},
+  {id:'atletico',name:'Atlético de Madrid',country:'Spain',league:'laliga',logo:'❤️',rating:88,fans:45000000,budget:150000000,wage:2200000,stadium:'Civitas Metropolitano',capacity:68456},
+  {id:'sevilla',name:'Sevilla FC',country:'Spain',league:'laliga',logo:'⬜',rating:80,fans:22000000,budget:80000000,wage:1200000,stadium:'Ramón Sánchez-Pizjuán',capacity:43883},
+  {id:'villarreal',name:'Villarreal CF',country:'Spain',league:'laliga',logo:'🟡',rating:80,fans:15000000,budget:75000000,wage:1100000,stadium:'Estadio de la Cerámica',capacity:23500},
+  {id:'bayernmunich',name:'Bayern München',country:'Germany',league:'bundesliga',logo:'🔴',rating:93,fans:75000000,budget:280000000,wage:2800000,stadium:'Allianz Arena',capacity:75024},
+  {id:'dortmund',name:'Borussia Dortmund',country:'Germany',league:'bundesliga',logo:'🟡',rating:86,fans:40000000,budget:160000000,wage:1800000,stadium:'Signal Iduna Park',capacity:81365},
+  {id:'leipzg',name:'RB Leipzig',country:'Germany',league:'bundesliga',logo:'🔴',rating:84,fans:25000000,budget:130000000,wage:1600000,stadium:'Red Bull Arena',capacity:47069},
+  {id:'bayer04',name:'Bayer 04 Leverkusen',country:'Germany',league:'bundesliga',logo:'🔴',rating:88,fans:28000000,budget:150000000,wage:1700000,stadium:'BayArena',capacity:30210},
+  {id:'inter',name:'Inter Milan',country:'Italy',league:'seriea',logo:'⚫🔵',rating:90,fans:55000000,budget:200000000,wage:2200000,stadium:'San Siro',capacity:80018},
+  {id:'acmilan',name:'AC Milan',country:'Italy',league:'seriea',logo:'🔴',rating:87,fans:50000000,budget:180000000,wage:2000000,stadium:'San Siro',capacity:80018},
+  {id:'juventus',name:'Juventus',country:'Italy',league:'seriea',logo:'⚫',rating:85,fans:65000000,budget:160000000,wage:1900000,stadium:'Allianz Stadium',capacity:41507},
+  {id:'napoli',name:'SSC Napoli',country:'Italy',league:'seriea',logo:'💙',rating:83,fans:35000000,budget:120000000,wage:1500000,stadium:'Diego Armando Maradona',capacity:54726},
+  {id:'atalanta',name:'Atalanta BC',country:'Italy',league:'seriea',logo:'⚫',rating:83,fans:20000000,budget:120000000,wage:1300000,stadium:'Gewiss Stadium',capacity:21300},
+  {id:'psg',name:'Paris Saint-Germain',country:'France',league:'ligue1',logo:'⚡',rating:91,fans:70000000,budget:350000000,wage:2800000,stadium:'Parc des Princes',capacity:47929},
+  {id:'monaco',name:'AS Monaco',country:'France',league:'ligue1',logo:'🔴',rating:80,fans:15000000,budget:90000000,wage:1200000,stadium:'Stade Louis II',capacity:18523},
+  {id:'marseille',name:'Olympique de Marseille',country:'France',league:'ligue1',logo:'🔵',rating:79,fans:25000000,budget:80000000,wage:1100000,stadium:'Orange Vélodrome',capacity:67394},
+  {id:'ajax',name:'AFC Ajax',country:'Netherlands',league:'eredivisie',logo:'🔴',rating:82,fans:30000000,budget:100000000,wage:1200000,stadium:'Johan Cruyff Arena',capacity:55000},
+  {id:'psv',name:'PSV Eindhoven',country:'Netherlands',league:'eredivisie',logo:'🔴',rating:81,fans:20000000,budget:90000000,wage:1100000,stadium:'Philips Stadion',capacity:35000},
+  {id:'benfica',name:'SL Benfica',country:'Portugal',league:'primeira',logo:'🦅',rating:83,fans:25000000,budget:120000000,wage:1300000,stadium:'Estádio da Luz',capacity:65647},
+  {id:'porto',name:'FC Porto',country:'Portugal',league:'primeira',logo:'🐉',rating:82,fans:20000000,budget:110000000,wage:1200000,stadium:'Estádio do Dragão',capacity:50033},
+  {id:'galatasaray',name:'Galatasaray',country:'Turkey',league:'superlig',logo:'🦁',rating:82,fans:35000000,budget:100000000,wage:1200000,stadium:'RAMS Park',capacity:52280},
+  {id:'fenerbahce',name:'Fenerbahçe',country:'Turkey',league:'superlig',logo:'💛',rating:81,fans:32000000,budget:95000000,wage:1150000,stadium:'Şükrü Saracoğlu',capacity:47000},
+  {id:'flamengo',name:'CR Flamengo',country:'Brazil',league:'brasileirao',logo:'🔴',rating:82,fans:45000000,budget:100000000,wage:1200000,stadium:'Maracanã',capacity:78838},
+  {id:'palmeiras',name:'SE Palmeiras',country:'Brazil',league:'brasileirao',logo:'💚',rating:82,fans:40000000,budget:100000000,wage:1200000,stadium:'Allianz Parque',capacity:43713},
+  {id:'bocajuniors',name:'Boca Juniors',country:'Argentina',league:'argprimera',logo:'💛',rating:79,fans:40000000,budget:70000000,wage:900000,stadium:'La Bombonera',capacity:57395},
+  {id:'riverplate',name:'River Plate',country:'Argentina',league:'argprimera',logo:'🔴',rating:80,fans:38000000,budget:75000000,wage:950000,stadium:'El Monumental',capacity:84567},
+  {id:'clubamerica',name:'Club América',country:'Mexico',league:'liga1mex',logo:'🦅',rating:80,fans:35000000,budget:80000000,wage:1000000,stadium:'Estadio Azteca',capacity:87523},
+  {id:'lafc',name:'Los Angeles FC',country:'USA',league:'mls',logo:'⚫',rating:78,fans:20000000,budget:70000000,wage:900000,stadium:'BMO Stadium',capacity:22000},
+  {id:'interfcmiami',name:'Inter Miami CF',country:'USA',league:'mls',logo:'🩷',rating:78,fans:25000000,budget:70000000,wage:900000,stadium:'Chase Stadium',capacity:21550},
+  {id:'alhilal',name:'Al-Hilal',country:'Saudi Arabia',league:'saudipl',logo:'💙',rating:82,fans:30000000,budget:200000000,wage:1500000,stadium:'Kingdom Arena',capacity:47000},
+  {id:'alnassr',name:'Al-Nassr FC',country:'Saudi Arabia',league:'saudipl',logo:'🟡',rating:80,fans:25000000,budget:180000000,wage:1400000,stadium:'Al-Awwal Park',capacity:25000},
+  {id:'persija',name:'Persija Jakarta',country:'Indonesia',league:'liga1ind',logo:'🦅',rating:65,fans:25000000,budget:10000000,wage:200000,stadium:'Jakarta International Stadium',capacity:82000},
+  {id:'persib',name:'Persib Bandung',country:'Indonesia',league:'liga1ind',logo:'💙',rating:65,fans:20000000,budget:10000000,wage:200000,stadium:'Stadion Sijalak Harupat',capacity:38000},
+  {id:'arema',name:'Arema FC',country:'Indonesia',league:'liga1ind',logo:'💙',rating:63,fans:15000000,budget:8000000,wage:160000,stadium:'Stadion Kanjuruhan',capacity:45000},
+  {id:'borneo',name:'Borneo FC Samarinda',country:'Indonesia',league:'liga1ind',logo:'🔴',rating:63,fans:10000000,budget:7500000,wage:150000,stadium:'Stadion Segiri',capacity:18000},
+  {id:'pss',name:'PSS Sleman',country:'Indonesia',league:'liga1ind',logo:'💚',rating:62,fans:9000000,budget:6000000,wage:140000,stadium:'Stadion Maguwoharjo',capacity:20000},
+];
+const TOURNAMENTS=[
+  {id:'cl',name:'UEFA Champions League',logo:'⭐',prize:25000000,minRating:80,cooldown:1},
+  {id:'uel',name:'UEFA Europa League',logo:'🟠',prize:10000000,minRating:70,cooldown:1},
+  {id:'uecl',name:'UEFA Conference League',logo:'🟡',prize:5000000,minRating:60,cooldown:1},
+  {id:'libertadores',name:'Copa Libertadores',logo:'⚡',prize:15000000,minRating:70,cooldown:1},
+  {id:'acl',name:'AFC Champions League',logo:'🌏',prize:8000000,minRating:65,cooldown:1},
+  {id:'cwc',name:'FIFA Club World Cup',logo:'🌐',prize:30000000,minRating:80,cooldown:2},
+];
+
+function defaultG(){return{initialized:false,week:1,season:1,year:2024,managerName:'',managerNation:'',managerRating:50,difficulty:'normal',myClubId:null,myClub:null,clubs:[],allPlayers:[],myPlayerIds:[],transferMarket:[],fixtures:[],leagueTable:[],results:[],finances:{balance:0,weeklyWage:0,transferSpent:0,transferReceived:0,matchIncome:0,log:[]},news:[],offers:[],trophies:[],selectedFormation:'4-3-3',lineup:[],stats:{wins:0,draws:0,losses:0,goalsFor:0,goalsAgainst:0},totalWeeks:38,tournamentCooldowns:{},playerContracts:{}};}
+let G=defaultG();
+
+// ============================================================
+// PLAYER GENERATION
+// ============================================================
+const FN=['Luca','Marco','Diego','Carlos','James','Alex','Pedro','Kai','Leon','Tom','Antoine','Jan','Robert','Erling','Vinicius','Rodri','Declan','Jude','Gavi','Pedri','Musiala','Son','Fernandes','De Bruyne','Modric','Salah','Fabinho','Gomez','Robertson','Van Dijk','Ederson','Cancelo','Dias'];
+const LN=['Silva','Costa','Martinez','Johnson','Brown','Garcia','Muller','Schmidt','Dupont','Martin','Lewandowski','Junior','Rodriguez','Rice','Santos','Oliveira','Ferreira','Sousa','Pereira','Rodrigues','Alves','Rashford','Sancho','Maguire','Saka','Odegaard','Trossard'];
+
+function genPlayers(prefix,league,quality,count){
+  count=count||18;
+  const posArr=['GK','CB','CB','LB','RB','CDM','CM','CM','CAM','LW','RW','ST','ST','CB','CM','MID','ATT','GK'];
+  return Array.from({length:count},(_,i)=>{
+    const rating=Math.min(99,Math.max(50,quality+Math.floor(Math.random()*8)-3));
+    const cy=2+Math.floor(Math.random()*4);
+    return {
+      id:'p_'+prefix+'_'+i+'_'+Math.random().toString(36).slice(2,8),
+      name:FN[Math.floor(Math.random()*FN.length)]+' '+LN[Math.floor(Math.random()*LN.length)],
+      pos:posArr[i%posArr.length],age:18+Math.floor(Math.random()*18),rating,
+      potential:Math.min(99,rating+Math.floor(Math.random()*12)),
+      wage:Math.floor(rating*rating*80+Math.random()*10000),
+      value:Math.floor(rating*rating*rating*200+Math.random()*1000000),
+      league,nationality:'International',contractExpiry:2024+cy,contractYears:cy,
+      goals:0,assists:0,apps:0,injured:false,injuryWeeks:0,forSale:false,salePrice:0
+    };
+  });
+}
+
+function generateAllPlayers(){
+  const myClub=G.clubs.find(c=>c.id===G.myClubId);if(!myClub) return;
+  const toGen=[...new Set([...G.clubs.filter(c=>c.league===myClub.league),...G.clubs.filter(c=>c.rating>=80).slice(0,25)])];
+  toGen.forEach(club=>{
+    if(club.playerIds&&club.playerIds.length>0) return;
+    const q=Math.round(club.rating*0.85+Math.random()*10);
+    const pl=genPlayers(club.id,club.league,q,18);
+    pl.forEach(p=>{p.clubId=club.id;});
+    club.playerIds=pl.map(p=>p.id);
+    G.allPlayers.push(...pl);
+  });
+}
+
+function ensureClubPlayers(clubId){
+  const club=G.clubs.find(c=>c.id===clubId);
+  if(!club||(club.playerIds&&club.playerIds.length>0)) return;
+  const q=Math.round(club.rating*0.85+Math.random()*10);
+  const pl=genPlayers(club.id,club.league,q,18);
+  pl.forEach(p=>{p.clubId=club.id;});
+  club.playerIds=pl.map(p=>p.id);
+  G.allPlayers.push(...pl);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function updateLoad(p,t){document.getElementById('prog').style.width=p+'%';document.getElementById('load-text').textContent=t;}
+
+function populateFilters(){
+  const lf=document.getElementById('club-league-filter');
+  const cf=document.getElementById('club-country-filter');
+  const mn=document.getElementById('mgr-nation');
+  const ccC=document.getElementById('cc-country');
+  const ccL=document.getElementById('cc-league');
+  if(!lf) return;
+  [...new Set(G.clubs.map(c=>c.league))].forEach(l=>{const lg=LEAGUES.find(x=>x.id===l);const o=document.createElement('option');o.value=l;o.textContent=lg?lg.flag+' '+lg.name:l;lf.appendChild(o);});
+  [...new Set(G.clubs.map(c=>c.country))].sort().forEach(c=>{[cf,ccC].forEach(el=>{if(!el) return;const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});});
+  NATIONALITIES.forEach(n=>{if(mn){const o=document.createElement('option');o.value=n;o.textContent=n;mn.appendChild(o);}});
+  LEAGUES.forEach(lg=>{if(ccL){const o=document.createElement('option');o.value=lg.id;o.textContent=lg.flag+' '+lg.name;ccL.appendChild(o);}});
+}
+
+async function initGame(){
+  G.clubs=CLUBS_DATA.map(c=>({...c,playerIds:[],trophies:[]}));
+  updateLoad(30,'Memuat data...');
+  await initFirebase();
+  updateLoad(80,'Menyiapkan UI...');
+  setTimeout(()=>{
+    updateLoad(100,'Siap!');
+    setTimeout(()=>{
+      document.getElementById('splash').style.display='none';
+      const su=localStorage.getItem('tx_cu');
+      if(su){
+        currentUser=su;hideAuth();
+        const saved=localStorage.getItem(getSaveKey());
+        if(saved){try{const d=JSON.parse(saved);if(d&&d.initialized){Object.assign(G,d);populateFilters();showPage('dashboard');renderDashboard();renderTopbar();document.getElementById('welcome-screen').style.display='none';return;}}catch(e){}}
+        populateFilters();showWelcome();
+      } else {
+        document.getElementById('auth-screen').style.display='flex';
+      }
+    },400);
+  },600);
+}
+
+// ============================================================
+// WELCOME & SETUP
+// ============================================================
+function showWelcome(){document.getElementById('welcome-screen').style.display='block';document.getElementById('setup-existing').style.display='none';document.getElementById('setup-create').style.display='none';hideAllPages();document.getElementById('page-dashboard').style.display='none';}
+function backToWelcome(){document.getElementById('welcome-screen').style.display='block';document.getElementById('setup-existing').style.display='none';document.getElementById('setup-create').style.display='none';}
+function showSetup(t){document.getElementById('welcome-screen').style.display='none';if(t==='existing'){document.getElementById('setup-existing').style.display='block';renderClubGrid();}else document.getElementById('setup-create').style.display='block';}
+function selectEmoji(e){document.getElementById('cc-logo').value=e;document.getElementById('cc-preview-logo').textContent=e;}
+function selectDiff(el,d){document.querySelectorAll('.difficulty-card').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');G.difficulty=d;}
+
+function renderClubGrid(){
+  const grid=document.getElementById('club-grid');
+  const s=(document.getElementById('club-search').value||'').toLowerCase();
+  const lf=document.getElementById('club-league-filter').value;
+  const cf=document.getElementById('club-country-filter').value;
+  const filtered=G.clubs.filter(c=>(!s||c.name.toLowerCase().includes(s))&&(!lf||c.league===lf)&&(!cf||c.country===cf));
+  grid.innerHTML=filtered.map(c=>{const lg=LEAGUES.find(l=>l.id===c.league);return '<div class="club-card" onclick="selectClub(\''+c.id+'\')"><div style="font-size:2em;margin-bottom:6px">'+c.logo+'</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.1em">'+c.name+'</div><div style="font-size:.78em;color:var(--text3)">'+(lg?lg.flag+' '+lg.name:c.league)+'</div><div style="color:var(--accent3);font-size:.82em;margin-top:3px">'+getRatingStars(c.rating)+'</div><div style="font-size:.78em;color:var(--green)">💰 '+formatMoney(c.budget)+'</div></div>';}).join('');
+}
+function filterClubs(){renderClubGrid();}
+
+function selectClub(id){
+  const c=G.clubs.find(x=>x.id===id);if(!c) return;
+  const lg=LEAGUES.find(l=>l.id===c.league);
+  document.getElementById('modal-container').innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">'+
+    '<h2>'+c.logo+' '+c.name+'</h2>'+
+    '<div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px">'+
+    '<div style="display:flex;gap:12px;align-items:center"><div style="font-size:3.5em">'+c.logo+'</div><div>'+
+    '<div style="font-weight:700;font-size:1.3em">'+c.name+'</div>'+
+    '<div style="color:var(--text2)">'+(lg?lg.flag+' '+lg.name:c.league)+' • '+c.country+'</div>'+
+    '<div style="color:var(--green)">Budget: '+formatMoney(c.budget)+'</div>'+
+    '<div style="color:var(--accent3)">'+getRatingStars(c.rating)+' ('+c.rating+')</div>'+
+    '</div></div></div>'+
+    '<div class="form-group"><label>Nama Manajer</label><input id="ms-name" placeholder="Nama kamu" value="'+G.managerName+'"></div>'+
+    '<div class="form-group"><label>Kebangsaan</label><select id="ms-nation">'+NATIONALITIES.map(n=>'<option '+(n===G.managerNation?'selected':'')+'>'+n+'</option>').join('')+'</select></div>'+
+    '<div class="form-group"><label>Kesulitan</label><div style="display:flex;gap:6px">'+
+    ['easy','normal','hard'].map(d=>'<div class="difficulty-card '+(G.difficulty===d?'selected':'')+'" onclick="G.difficulty=\''+d+'\';this.parentElement.querySelectorAll(\'.difficulty-card\').forEach(e=>e.classList.remove(\'selected\'));this.classList.add(\'selected\')" style="flex:1"><div>'+(d==='easy'?'😊':d==='normal'?'😐':'😤')+'</div><div style="font-size:.75em">'+d+'</div></div>').join('')+
+    '</div></div>'+
+    '<div style="display:flex;gap:10px;margin-top:18px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button>'+
+    '<button class="btn btn-primary" onclick="startNewGame(\'existing\',\''+id+'\')">🚀 Mulai!</button>'+
+    '</div><button class="modal-close" onclick="closeModal()">✕</button></div></div>';
+}
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+
+function startNewGame(mode,clubId){
+  let mn,nat,myClub;
+  if(mode==='existing'){
+    mn=(document.getElementById('ms-name').value||'').trim()||'The Manager';
+    nat=document.getElementById('ms-nation').value;
+    myClub=G.clubs.find(c=>c.id===clubId);
+  } else {
+    mn=(document.getElementById('mgr-name').value||'').trim()||'The Manager';
+    nat=document.getElementById('mgr-nation').value;
+    const name=(document.getElementById('cc-name').value||'').trim();
+    if(!name){showNotif('Masukkan nama klub!','error');return;}
+    const logo=document.getElementById('cc-logo').value||'⚽';
+    const stadium=document.getElementById('cc-stadium').value||'Home Stadium';
+    const capacity=parseInt(document.getElementById('cc-capacity').value)||30000;
+    const country=document.getElementById('cc-country').value;
+    const league=document.getElementById('cc-league').value;
+    const budget=parseInt(document.getElementById('cc-budget').value)||20000000;
+    myClub={id:'custom_'+Date.now(),name,logo,stadium,capacity,country,league,budget,rating:60,fans:50000,wage:500000,playerIds:[]};
+    G.clubs.push(myClub);
+  }
+  if(!myClub){showNotif('Klub tidak ditemukan!','error');return;}
+  closeModal();
+  G.myClubId=myClub.id;G.myClub=myClub;G.allPlayers=[];
+  generateAllPlayers();ensureClubPlayers(myClub.id);
+  G.managerName=mn;G.managerNation=nat;G.managerRating=50;
+  G.myPlayerIds=[...(myClub.playerIds||[])];
+  G.finances={balance:myClub.budget,weeklyWage:0,transferSpent:0,transferReceived:0,matchIncome:0,log:[{week:1,desc:'Budget awal',amount:myClub.budget,balance:myClub.budget}]};
+  G.finances.weeklyWage=G.myPlayerIds.reduce((s,pid)=>{const p=G.allPlayers.find(x=>x.id===pid);return s+(p?p.wage:0);},0);
+  G.week=1;G.season=1;G.year=2024;G.selectedFormation='4-3-3';
+  G.stats={wins:0,draws:0,losses:0,goalsFor:0,goalsAgainst:0};
+  G.results=[];G.news=[];G.offers=[];G.trophies=[];
+  G.lineup=G.myPlayerIds.slice(0,11);G.tournamentCooldowns={};G.playerContracts={};
+  G.myPlayerIds.forEach(pid=>{const p=G.allPlayers.find(x=>x.id===pid);if(p) G.playerContracts[pid]={expiry:p.contractExpiry||2026};});
+  G.initialized=true;
+  generateFixtures();generateLeagueTable();
+  addNews('🎉 '+mn+' ditunjuk sebagai manajer baru '+myClub.name+'!','appointment');
+  saveGame();
+  document.getElementById('welcome-screen').style.display='none';
+  document.getElementById('setup-existing').style.display='none';
+  document.getElementById('setup-create').style.display='none';
+  hideAllPages();
+  document.getElementById('page-dashboard').classList.add('active');
+  document.getElementById('nav-dashboard').classList.add('active');
+  renderDashboard();renderTopbar();
+  showNotif('Selamat datang, '+mn+'! Kamu sekarang manajer '+myClub.name+'! 🎉','success');
+}
+
+// ============================================================
+// FIXTURES & LEAGUE
+// ============================================================
+function generateFixtures(){
+  G.fixtures=[];
+  const club=G.clubs.find(c=>c.id===G.myClubId);if(!club) return;
+  const opp=G.clubs.filter(c=>c.league===club.league&&c.id!==club.id).slice(0,19);
+  let week=1;
+  opp.forEach((o,i)=>{
+    G.fixtures.push({id:'fh'+i,week:week++,home:club.id,away:o.id,played:false,homeGoals:0,awayGoals:0,type:'league'});
+    G.fixtures.push({id:'fa'+i,week:week+19,home:o.id,away:club.id,played:false,homeGoals:0,awayGoals:0,type:'league'});
+    week++;
+  });
+  G.fixtures.sort((a,b)=>a.week-b.week);
+  if(opp[0]) G.fixtures.push({id:'cup1',week:5,home:club.id,away:opp[0].id,played:false,homeGoals:0,awayGoals:0,type:'cup',cupName:'Piala Nasional'});
+  if(opp[1]) G.fixtures.push({id:'cup2',week:14,home:opp[1].id,away:club.id,played:false,homeGoals:0,awayGoals:0,type:'cup',cupName:'Piala Nasional'});
+}
+function generateLeagueTable(){
+  const club=G.clubs.find(c=>c.id===G.myClubId);if(!club) return;
+  G.leagueTable=G.clubs.filter(c=>c.league===club.league).map(c=>({clubId:c.id,name:c.name,logo:c.logo,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}));
+}
+
+// ============================================================
+// MATCH SIMULATION
+// ============================================================
+function simulateMatch(fixture){
+  const hc=G.clubs.find(c=>c.id===fixture.home);
+  const ac=G.clubs.find(c=>c.id===fixture.away);
+  if(!hc||!ac) return null;
+  const isMH=fixture.home===G.myClubId,isMR=fixture.away===G.myClubId;
+  let hs=hc.rating+(isMH?G.managerRating/10:0);
+  let as=ac.rating+(isMR?G.managerRating/10:0);
+  if(G.difficulty==='easy'&&(isMH||isMR)){if(isMH)hs+=5;else as+=5;}
+  if(G.difficulty==='hard'&&(isMH||isMR)){if(isMH)hs-=3;else as-=3;}
+  hs+=3;
+  const total=Math.random()<0.4?Math.floor(Math.random()*3):Math.floor(Math.random()*5)+1;
+  let hg=0,ag=0;const hp=hs/(hs+as);
+  for(let i=0;i<total;i++){if(Math.random()<hp)hg++;else ag++;}
+  ensureClubPlayers(hc.id);ensureClubPlayers(ac.id);
+  const hpl=(hc.playerIds||[]).slice(0,11);const apl=(ac.playerIds||[]).slice(0,11);
+  const events=[];
+  for(let g=0;g<hg;g++){const min=Math.floor(Math.random()*90)+1;const sc=G.allPlayers.find(p=>p.id===hpl[Math.floor(Math.random()*Math.min(4,hpl.length))]);events.push({min,player:sc?.name||'Unknown',team:hc.name});if(sc&&(isMH||isMR)){sc.goals++;sc.apps++;}}
+  for(let g=0;g<ag;g++){const min=Math.floor(Math.random()*90)+1;const sc=G.allPlayers.find(p=>p.id===apl[Math.floor(Math.random()*Math.min(4,apl.length))]);events.push({min,player:sc?.name||'Unknown',team:ac.name});if(sc&&(isMH||isMR)){sc.goals++;sc.apps++;}}
+  events.sort((a,b)=>a.min-b.min);
+  fixture.played=true;fixture.homeGoals=hg;fixture.awayGoals=ag;fixture.events=events;
+  updLT(fixture.home,fixture.away,hg,ag);
+  if(isMH||isMR){
+    const mg=isMH?hg:ag,og=isMH?ag:hg;
+    G.stats.goalsFor+=mg;G.stats.goalsAgainst+=og;
+    if(mg>og){G.stats.wins++;G.managerRating=Math.min(99,G.managerRating+2);}
+    else if(mg===og){G.stats.draws++;G.managerRating=Math.min(99,G.managerRating+0.5);}
+    else{G.stats.losses++;G.managerRating=Math.max(1,G.managerRating-1);}
+    const res=mg>og?'WIN':mg===og?'DRAW':'LOSS';
+    const opp=isMH?ac:hc;
+    G.results.push({week:G.week,result:res,myGoals:mg,oppGoals:og,opp:opp.name,type:fixture.type,cupName:fixture.cupName||'Liga'});
+    addNews('⚽ '+res+'! '+G.myClub.name+' '+(isMH?hg:ag)+'-'+(isMH?ag:hg)+' '+opp.name,res.toLowerCase());
+    const income=Math.floor(hc.capacity*30+Math.random()*50000);
+    G.finances.balance+=income;G.finances.matchIncome+=income;
+    G.finances.log.push({week:G.week,desc:'Pendapatan laga vs '+opp.name,amount:income,balance:G.finances.balance});
+  }
+  return{homeGoals:hg,awayGoals:ag,events,homeClub:hc,awayClub:ac};
+}
+
+function updLT(hid,aid,hg,ag){
+  const h=G.leagueTable.find(t=>t.clubId===hid);
+  const a=G.leagueTable.find(t=>t.clubId===aid);
+  if(!h||!a) return;
+  h.p++;a.p++;h.gf+=hg;h.ga+=ag;h.gd=h.gf-h.ga;a.gf+=ag;a.ga+=hg;a.gd=a.gf-a.ga;
+  if(hg>ag){h.w++;h.pts+=3;a.l++;}else if(hg===ag){h.d++;h.pts++;a.d++;a.pts++;}else{a.w++;a.pts+=3;h.l++;}
+  G.leagueTable.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+}
+
+function simOtherMatches(){
+  const club=G.clubs.find(c=>c.id===G.myClubId);if(!club) return;
+  const others=G.clubs.filter(c=>c.league===club.league&&c.id!==G.myClubId);
+  for(let i=0;i<others.length-1;i+=2){
+    const already=G.fixtures.some(f=>f.week===G.week&&((f.home===others[i].id&&f.away===others[i+1].id)||(f.home===others[i+1].id&&f.away===others[i].id)));
+    if(!already) simulateMatch({id:'s'+G.week+'_'+i,week:G.week,home:others[i].id,away:others[i+1].id,played:false,homeGoals:0,awayGoals:0,type:'league'});
+  }
+}
+
+function advanceWeek(){
+  const wt=G.myPlayerIds.reduce((s,pid)=>{const p=G.allPlayers.find(x=>x.id===pid);return s+(p?p.wage:0);},0);
+  G.finances.balance-=wt;G.finances.weeklyWage=wt;
+  G.finances.log.push({week:G.week,desc:'Gaji pemain',amount:-wt,balance:G.finances.balance});
+  const wf=G.fixtures.filter(f=>f.week===G.week&&!f.played);
+  let myR=null,myF=null;
+  wf.forEach(f=>{const r=simulateMatch(f);if((f.home===G.myClubId||f.away===G.myClubId)&&r){myR=r;myF=f;}});
+  simOtherMatches();
+  if(Math.random()<0.12){const mp=G.allPlayers.filter(p=>G.myPlayerIds.includes(p.id)&&!p.injured);if(mp.length){const p=mp[Math.floor(Math.random()*mp.length)];p.injured=true;p.injuryWeeks=Math.floor(Math.random()*4)+1;showNotif(p.name+' cedera! '+p.injuryWeeks+' minggu.','error');}}
+  if(Math.random()<0.08){const a=Math.floor(Math.random()*400000)+100000;G.finances.balance+=a;G.finances.log.push({week:G.week,desc:'Pendapatan sponsor',amount:a,balance:G.finances.balance});showNotif('Sponsor: +'+formatMoney(a),'success');}
+  if(G.week%5===0&&G.managerRating>60&&Math.random()<0.25){
+    const big=G.clubs.filter(c=>c.id!==G.myClubId&&c.rating>G.myClub.rating+5);
+    if(big.length){const oc=big[Math.floor(Math.random()*big.length)];G.offers.push({id:'o'+Date.now(),clubId:oc.id,clubName:oc.name,clubLogo:oc.logo,offeredWage:Math.floor(oc.rating*50000*(G.managerRating/50)),week:G.week,deadline:G.week+3});const b=document.getElementById('offer-badge');if(b){b.style.display='inline';b.textContent=G.offers.length;}showNotif('📩 Tawaran dari '+oc.name+'!','warning');addNews('📩 '+oc.name+' tertarik pada '+G.managerName,'offer');}
+  }
+  if((G.week<=8||G.week>=20)&&G.week<=26) generateTransferMarket();
+  G.week++;
+  if(G.week>G.totalWeeks) endSeason();
+  saveGame();renderDashboard();renderTopbar();
+  if(myR&&myF) showMatchResult(myF,myR);
+  else showNotif('Pekan '+( G.week-1)+' selesai. Tidak ada laga.','info');
+}
+
+function showMatchResult(fixture,result){
+  const{homeGoals:hg,awayGoals:ag,events,homeClub:hc,awayClub:ac}=result;
+  const isMH=fixture.home===G.myClubId;
+  const mg=isMH?hg:ag,og=isMH?ag:hg;
+  const opp=isMH?ac:hc;
+  const rc=mg>og?'var(--green)':mg===og?'var(--accent)':'var(--red)';
+  const rt=mg>og?'⚽ MENANG!':mg===og?'🤝 SERI':'💔 KALAH';
+  document.getElementById('modal-container').innerHTML='<div class="modal-overlay"><div class="modal">'+
+    '<h2 style="color:'+rc+'">'+rt+'</h2>'+
+    '<div style="display:flex;justify-content:space-around;align-items:center;margin:18px 0">'+
+    '<div style="text-align:center"><div style="font-size:2em">'+G.myClub.logo+'</div><div style="font-weight:700">'+G.myClub.name+'</div></div>'+
+    '<div style="font-family:\'Orbitron\',sans-serif;font-size:2.8em;color:var(--accent3)">'+mg+' - '+og+'</div>'+
+    '<div style="text-align:center"><div style="font-size:2em">'+opp.logo+'</div><div style="font-weight:700">'+opp.name+'</div></div></div>'+
+    '<div style="max-height:180px;overflow-y:auto;margin-bottom:14px">'+events.map(e=>'<div class="match-event"><span style="color:var(--text3);width:32px">'+e.min+'\'</span><span>⚽</span><span>'+e.player+' <span style="color:var(--text3)">('+e.team+')</span></span></div>').join('')+'</div>'+
+    '<div style="background:var(--bg3);border-radius:8px;padding:12px">'+
+    '<div class="stat-row"><span>Rating Manajer</span><span style="color:var(--accent)">'+G.managerRating.toFixed(1)+'</span></div>'+
+    '<div class="stat-row"><span>Rekor Musim</span><span>'+G.stats.wins+'M '+G.stats.draws+'S '+G.stats.losses+'K</span></div></div>'+
+    '<button class="btn btn-primary" onclick="closeModal()" style="margin-top:14px;width:100%">Lanjutkan ➡️</button>'+
+    '</div></div>';
+}
+
+function endSeason(){
+  G.week=1;G.season++;G.year++;G.totalWeeks=38;
+  G.stats={wins:0,draws:0,losses:0,goalsFor:0,goalsAgainst:0};
+  generateFixtures();
+  const pos=G.leagueTable.findIndex(t=>t.clubId===G.myClubId)+1;
+  if(pos===1){G.trophies.push({name:'Juara Liga '+G.year,icon:'🏆',season:G.season});G.managerRating=Math.min(99,G.managerRating+5);showNotif('🏆 JUARA LIGA!','success');}
+  generateLeagueTable();G.managerRating=Math.min(99,G.managerRating+1);
+  addNews('🎉 Musim '+G.season+' dimulai!','season');showNotif('Musim '+G.season+' dimulai!','info');
+}
+
+// ============================================================
+// TOURNAMENT
+// ============================================================
+function enterTournament(tid){
+  const t=TOURNAMENTS.find(x=>x.id===tid);if(!t) return;
+  const lw=G.tournamentCooldowns[tid]||0;
+  if(G.season-lw<t.cooldown&&lw>0){showNotif('Cooldown aktif!','warning');return;}
+  if(G.myClub.rating<t.minRating-10){showNotif('Rating klub terlalu rendah!','error');return;}
+  let cands=G.clubs.filter(c=>c.id!==G.myClubId&&c.rating>=t.minRating-5).slice(0,31);
+  if(cands.length<7) cands=[...G.clubs].sort((a,b)=>b.rating-a.rating).filter(c=>c.id!==G.myClubId).slice(0,31);
+  const rounds=['Babak 32','Babak 16','Perempat Final','Semi Final','Final'];
+  let mr=G.myClub.rating+(G.managerRating/15),elim=false,reached='',log=[];
+  const sc=[...cands].sort((a,b)=>b.rating-a.rating);
+  for(let r=0;r<5;r++){
+    if(elim) break;
+    const pool=sc.slice(Math.floor(r*sc.length/5),Math.floor((r+1)*sc.length/5)+1);
+    const opp=pool.length>0?pool[Math.floor(Math.random()*pool.length)]:sc[r];
+    reached=rounds[Math.min(r,rounds.length-1)];
+    const diff=mr-opp.rating+(Math.random()*10-5);
+    const wp=Math.max(0.15,Math.min(0.85,0.45+diff*0.02));
+    const roll=Math.random();
+    if(roll<wp){log.push(reached+': ✅ Menang vs '+opp.name+' ('+opp.rating+')');mr+=0.5;}
+    else if(roll<wp+0.1){if(Math.random()<0.5)log.push(reached+': ✅ Menang adu penalti vs '+opp.name);else{elim=true;log.push(reached+': ❌ Kalah adu penalti vs '+opp.name);}}
+    else{elim=true;log.push(reached+': ❌ Kalah vs '+opp.name+' ('+opp.rating+')');}
+  }
+  const lh=log.map(l=>'<div style="padding:5px 0;border-bottom:1px solid var(--border)">'+l+'</div>').join('');
+  if(!elim){
+    G.trophies.push({name:t.name+' '+G.year,icon:t.logo,season:G.season});G.tournamentCooldowns[tid]=G.season;
+    G.finances.balance+=t.prize;G.finances.log.push({week:G.week,desc:t.name+' prize',amount:t.prize,balance:G.finances.balance});
+    G.managerRating=Math.min(99,G.managerRating+8);
+    document.getElementById('modal-container').innerHTML='<div class="modal-overlay"><div class="modal"><h2 style="color:var(--accent3)">🏆 JUARA '+t.name.toUpperCase()+'!</h2><div style="text-align:center;font-size:4em;margin:16px 0">'+t.logo+'</div><div style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:14px">'+lh+'</div><div style="color:var(--green)">+'+formatMoney(t.prize)+'</div><button class="btn btn-primary" onclick="closeModal()" style="margin-top:14px;width:100%">🎉 Rayakan!</button></div></div>';
+    addNews('🏆 '+G.myClub.name+' JUARA '+t.name+'!','trophy');
+  } else {
+    const cp=Math.floor(t.prize*0.12);G.finances.balance+=cp;
+    document.getElementById('modal-container').innerHTML='<div class="modal-overlay"><div class="modal"><h2>Turnamen Selesai</h2><p style="color:var(--text2);margin-bottom:12px">Gugur di <strong style="color:var(--red)">'+reached+'</strong></p><div style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:14px">'+lh+'</div><div style="color:var(--text2)">Uang partisipasi: +'+formatMoney(cp)+'</div><button class="btn btn-secondary" onclick="closeModal()" style="margin-top:14px;width:100%">Lanjut</button></div></div>';
+  }
+  saveGame();renderTopbar();
+}
+
+// ============================================================
+// TRANSFER
+// ============================================================
+function generateTransferMarket(){
+  G.clubs.filter(c=>c.rating>=72&&(!c.playerIds||c.playerIds.length===0)).slice(0,20).forEach(c=>ensureClubPlayers(c.id));
+  G.transferMarket=G.allPlayers.filter(p=>!G.myPlayerIds.includes(p.id)&&Math.random()<0.12).slice(0,60).map(p=>({...p,askPrice:Math.floor(p.value*(0.8+Math.random()*0.6))}));
+}
+function buyPlayer(pid){
+  const pl=G.allPlayers.find(p=>p.id===pid);if(!pl) return;
+  const mp=G.transferMarket.find(p=>p.id===pid);
+  const price=mp?mp.askPrice:pl.value;
+  if(G.finances.balance<price){showNotif('Budget tidak cukup! Butuh '+formatMoney(price),'error');return;}
+  if(G.myPlayerIds.length>=30){showNotif('Skuad penuh! Maks 30 pemain.','error');return;}
+  const fp=Math.floor(price*(1-Math.random()*0.12));
+  G.finances.balance-=fp;G.finances.transferSpent+=fp;
+  G.finances.log.push({week:G.week,desc:'Rekrut '+pl.name,amount:-fp,balance:G.finances.balance});
+  const oc=G.clubs.find(c=>c.id===pl.clubId);if(oc&&oc.playerIds) oc.playerIds=oc.playerIds.filter(id=>id!==pid);
+  pl.clubId=G.myClubId;G.myPlayerIds.push(pid);G.myClub.playerIds=G.myPlayerIds;
+  G.transferMarket=G.transferMarket.filter(p=>p.id!==pid);
+  const cy=2+Math.floor(Math.random()*3);pl.contractExpiry=G.year+cy;G.playerContracts[pid]={expiry:G.year+cy};
+  addNews('🔴 '+G.myClub.name+' rekrut '+pl.name+' seharga '+formatMoney(fp),'transfer');
+  showNotif(pl.name+' direkrut seharga '+formatMoney(fp)+'!','success');
+  saveGame();renderPage('transfer');
+}
+function renewContract(pid){
+  const pl=G.allPlayers.find(p=>p.id===pid);if(!pl) return;
+  const ny=3+Math.floor(Math.random()*2),wb=Math.floor(pl.wage*1.1);
+  pl.contractExpiry=G.year+ny;pl.wage=wb;G.playerContracts[pid]={expiry:G.year+ny};
+  addNews('📝 '+pl.name+' perpanjang kontrak '+ny+' tahun','contract');
+  showNotif(pl.name+' perpanjang kontrak ('+ny+' thn, '+formatMoney(wb)+'/mgg)','success');saveGame();
+}
+function sellPlayer(pid){
+  const pl=G.allPlayers.find(p=>p.id===pid);if(!pl) return;
+  const price=Math.floor(pl.value*(0.85+Math.random()*0.3));
+  G.finances.balance+=price;G.finances.transferReceived+=price;
+  G.finances.log.push({week:G.week,desc:'Jual '+pl.name,amount:price,balance:G.finances.balance});
+  G.myPlayerIds=G.myPlayerIds.filter(id=>id!==pid);G.myClub.playerIds=G.myPlayerIds;G.lineup=G.lineup.filter(id=>id!==pid);
+  pl.clubId='free';delete G.playerContracts[pid];
+  addNews('💚 '+pl.name+' dijual seharga '+formatMoney(price),'transfer');
+  showNotif(pl.name+' dijual seharga '+formatMoney(price)+'!','success');saveGame();renderPage('squad');
+}
+function acceptOffer(oid){
+  const o=G.offers.find(x=>x.id===oid);if(!o) return;
+  const nc=G.clubs.find(c=>c.id===o.clubId);if(!nc) return;
+  G.myClubId=nc.id;G.myClub=nc;G.myPlayerIds=[...(nc.playerIds||[])];G.finances.balance=nc.budget;G.stats={wins:0,draws:0,losses:0,goalsFor:0,goalsAgainst:0};G.lineup=G.myPlayerIds.slice(0,11);
+  generateFixtures();generateLeagueTable();G.offers=G.offers.filter(x=>x.id!==oid);
+  const b=document.getElementById('offer-badge');if(b){b.style.display=G.offers.length?'inline':'none';b.textContent=G.offers.length;}
+  saveGame();closeModal();showPage('dashboard');showNotif('Selamat datang di '+nc.name+'!','success');
+}
+function declineOffer(oid){
+  G.offers=G.offers.filter(x=>x.id!==oid);
+  const b=document.getElementById('offer-badge');if(b){b.style.display=G.offers.length?'inline':'none';b.textContent=G.offers.length;}
+  saveGame();renderPage('offers');
+}
+
+// ============================================================
+// RENDERS
+// ============================================================
+function renderTopbar(){
+  if(!G.initialized) return;
+  const el=document.getElementById('topbar-info');
+  const rc=G.managerRating>80?'var(--accent3)':G.managerRating>60?'var(--accent)':'var(--text2)';
+  el.innerHTML='<div class="mgr-stat"><div class="val">'+G.myClub.logo+' '+G.myClub.name+'</div><div class="lbl">Klub</div></div>'+
+    '<div class="mgr-stat"><div class="val" style="color:'+rc+'">'+G.managerRating.toFixed(0)+'</div><div class="lbl">Rating Mgr</div></div>'+
+    '<div class="mgr-stat"><div class="val" style="color:var(--green)">'+formatMoney(G.finances.balance)+'</div><div class="lbl">Budget</div></div>'+
+    '<div class="mgr-stat"><div class="val" style="color:var(--accent2)">'+formatFans(G.myClub.fans)+'</div><div class="lbl">Fans</div></div>'+
+    '<button class="btn btn-primary" onclick="advanceWeek()" style="font-size:.88em">⏩ Pekan Berikutnya</button>';
+  document.getElementById('game-date').textContent='S'+G.year+'/'+(G.year+1)+' · W'+G.week;
+}
+
+function renderDashboard(){
+  if(!G.initialized) return;
+  const el=document.getElementById('dashboard-content');
+  const myPos=G.leagueTable.findIndex(t=>t.clubId===G.myClubId)+1||'-';
+  const next=G.fixtures.find(f=>!f.played&&(f.home===G.myClubId||f.away===G.myClubId));
+  const nextOpp=next?G.clubs.find(c=>c.id===(next.home===G.myClubId?next.away:next.home)):null;
+  const form=G.results.slice(-5).map(r=>'<span style="color:'+(r.result==='WIN'?'var(--green)':r.result==='DRAW'?'var(--accent)':'var(--red)')+';font-weight:700">'+(r.result==='WIN'?'M':r.result==='DRAW'?'S':'K')+'</span>').join(' ');
+  el.innerHTML='<div class="grid-3" style="gap:14px;margin-bottom:14px">'+
+    '<div class="card" style="text-align:center"><div style="font-size:3.5em">'+G.myClub.logo+'</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4em">'+G.myClub.name+'</div><div style="font-size:.8em;color:var(--text2)">'+G.myClub.stadium+'</div><div style="margin-top:6px"><span class="badge badge-gold">Rating '+G.myClub.rating+'</span></div><div style="margin-top:6px;font-size:.85em;color:var(--accent2)">👥 '+formatFans(G.myClub.fans)+'</div></div>'+
+    '<div class="card"><div class="card-title">📊 Statistik Musim</div>'+
+    '<div class="stat-row"><span>Posisi Liga</span><span style="color:var(--accent3);font-family:\'Orbitron\',sans-serif;font-size:1.2em">'+myPos+'</span></div>'+
+    '<div class="stat-row"><span>Rekor</span><span>'+G.stats.wins+'M '+G.stats.draws+'S '+G.stats.losses+'K</span></div>'+
+    '<div class="stat-row"><span>Gol</span><span>'+G.stats.goalsFor+' - '+G.stats.goalsAgainst+'</span></div>'+
+    '<div class="stat-row"><span>Form</span><span>'+(form||'—')+'</span></div>'+
+    '<div class="stat-row"><span>Trofi</span><span>🏆 '+G.trophies.length+'</span></div></div>'+
+    '<div class="card"><div class="card-title">💰 Keuangan</div>'+
+    '<div class="stat-row"><span>Budget</span><span class="finance-positive">'+formatMoney(G.finances.balance)+'</span></div>'+
+    '<div class="stat-row"><span>Gaji/Minggu</span><span class="finance-negative">-'+formatMoney(G.finances.weeklyWage)+'</span></div>'+
+    '<div class="stat-row"><span>Transfer Keluar</span><span class="finance-negative">-'+formatMoney(G.finances.transferSpent)+'</span></div>'+
+    '<div class="stat-row"><span>Transfer Masuk</span><span class="finance-positive">+'+formatMoney(G.finances.transferReceived)+'</span></div></div></div>'+
+    '<div class="grid-2" style="gap:14px;margin-bottom:14px">'+
+    '<div class="card"><div class="card-title">⏭️ Laga Berikutnya</div>'+
+    (nextOpp?'<div style="display:flex;align-items:center;justify-content:space-around;margin:14px 0">'+
+    '<div style="text-align:center"><div style="font-size:2em">'+G.myClub.logo+'</div><div style="font-weight:700;font-size:.9em">'+G.myClub.name+'</div></div>'+
+    '<div style="font-family:\'Orbitron\',sans-serif;color:var(--accent)">VS</div>'+
+    '<div style="text-align:center"><div style="font-size:2em">'+nextOpp.logo+'</div><div style="font-weight:700;font-size:.9em">'+nextOpp.name+'</div></div></div>'+
+    '<div style="text-align:center;font-size:.85em;color:var(--text2)">Pekan '+next.week+' • '+(next.type==='cup'?next.cupName:'Liga')+' • '+(next.home===G.myClubId?'🏠 Kandang':'✈️ Tandang')+'</div>'+
+    '<button class="btn btn-primary" onclick="advanceWeek()" style="width:100%;margin-top:12px">▶️ Main Sekarang</button>':
+    '<div style="color:var(--text3);text-align:center;padding:20px">Tidak ada laga</div>')+'</div>'+
+    '<div class="card"><div class="card-title">🎖️ Profil Manajer</div>'+
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px"><div class="rating-circle '+(G.managerRating>85?'rating-elite':G.managerRating>70?'rating-high':G.managerRating>55?'rating-mid':'rating-low')+'" style="width:60px;height:60px;font-size:1.1em">'+G.managerRating.toFixed(0)+'</div><div><div style="font-weight:700">'+G.managerName+'</div><div style="color:var(--text2);font-size:.88em">'+G.managerNation+'</div><div style="color:var(--accent2);font-size:.85em">Musim '+G.season+'</div></div></div>'+
+    '<div class="stat-bar"><div class="stat-bar-fill" style="width:'+G.managerRating+'%;background:linear-gradient(90deg,var(--accent),var(--accent3))"></div></div></div></div>'+
+    '<div class="card"><div class="card-title">📋 Hasil Terakhir</div>'+
+    (G.results.slice(-5).reverse().map(r=>'<div class="stat-row"><span style="color:var(--text2);font-size:.85em">'+(r.cupName||'Liga')+'</span><span style="font-weight:700;color:'+(r.result==='WIN'?'var(--green)':r.result==='DRAW'?'var(--accent)':'var(--red)')+'">'+G.myClub.name+' '+r.myGoals+'-'+r.oppGoals+' '+r.opp+'</span><span class="badge '+(r.result==='WIN'?'badge-green':r.result==='DRAW'?'badge-blue':'badge-red')+'">'+r.result+'</span></div>').join('')||'<div style="color:var(--text3);text-align:center;padding:16px">Belum ada laga</div>')+
+    '</div>'+
+    (G.trophies.length>0?'<div class="card" style="margin-top:14px"><div class="card-title">🏆 Lemari Trofi</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">'+G.trophies.map(t=>'<div class="trophy-card"><div style="font-size:2.2em">'+t.icon+'</div><div style="font-size:.8em;margin-top:4px">'+t.name+'</div></div>').join('')+'</div></div>':'')+
+    '<div class="card" style="margin-top:14px"><div class="card-title">📰 Berita Terbaru</div>'+G.news.slice(-8).reverse().map(n=>'<div class="news-item"><div class="news-date">Pekan '+n.week+' · Musim '+n.season+'</div><div style="margin-top:3px">'+n.text+'</div></div>').join('')+'</div>';
+}
+
+function renderSquad(){
+  const s=(document.getElementById('squad-search')?.value||'').toLowerCase();
+  const pf=document.getElementById('squad-pos-filter')?.value||'';
+  const pl=G.allPlayers.filter(p=>G.myPlayerIds.includes(p.id)).filter(p=>(!s||p.name.toLowerCase().includes(s))&&(!pf||p.pos.includes(pf))).sort((a,b)=>b.rating-a.rating);
+  const el=document.getElementById('squad-content');
+  el.innerHTML='<div style="margin-bottom:10px;color:var(--text2);font-size:.9em">Skuad: <strong style="color:var(--text)">'+G.myPlayerIds.length+'/30</strong> • Avg: <strong style="color:var(--accent)">'+(G.myPlayerIds.length?Math.round(G.allPlayers.filter(p=>G.myPlayerIds.includes(p.id)).reduce((s,p)=>s+p.rating,0)/G.myPlayerIds.length):0)+'</strong> • Gaji/minggu: <strong style="color:var(--red)">'+formatMoney(G.allPlayers.filter(p=>G.myPlayerIds.includes(p.id)).reduce((s,p)=>s+p.wage,0))+'</strong></div>'+
+    '<div style="overflow-x:auto"><table class="table"><thead><tr><th>#</th><th>Pemain</th><th>Pos</th><th>Usia</th><th>Rating</th><th>Pot</th><th>Gaji/mgg</th><th>Nilai</th><th>Kontrak</th><th>Status</th><th>Gol</th><th>Aksi</th></tr></thead><tbody>'+
+    pl.map((p,i)=>{
+      const rc=p.rating>=85?'rating-elite':p.rating>=75?'rating-high':p.rating>=65?'rating-mid':'rating-low';
+      const il=G.lineup.includes(p.id);const ce=p.contractExpiry&&p.contractExpiry<=G.year+1;
+      return '<tr><td style="color:var(--text3)">'+(i+1)+'</td><td style="font-weight:700">'+p.name+'</td>'+
+        '<td><span class="badge '+(p.pos==='GK'?'badge-blue':p.pos.includes('B')?'badge-green':p.pos.includes('M')?'badge-gold':'badge-red')+'">'+p.pos+'</span></td>'+
+        '<td>'+p.age+'</td>'+
+        '<td><div class="rating-circle '+rc+'" style="width:34px;height:34px;font-size:.78em">'+p.rating+'</div></td>'+
+        '<td style="color:var(--purple)">'+p.potential+'</td>'+
+        '<td>'+formatMoney(p.wage)+'</td><td>'+formatMoney(p.value)+'</td>'+
+        '<td style="color:'+(ce?'var(--red)':'var(--text2)')+'">'+( p.contractExpiry||2026)+(ce?' ⚠️':'')+'</td>'+
+        '<td>'+(p.injured?'<span class="badge badge-red">🚑</span>':il?'<span class="badge badge-green">XI</span>':'<span class="badge" style="color:var(--text3)">Bench</span>')+'</td>'+
+        '<td style="color:var(--accent3)">'+p.goals+'</td>'+
+        '<td style="display:flex;gap:4px"><button class="btn btn-sm btn-secondary" onclick="viewPlayerModal(\''+p.id+'\')">👁️</button>'+(ce?'<button class="btn btn-sm btn-warning" onclick="renewContract(\''+p.id+'\')">📝</button>':'')+
+        '<button class="btn btn-sm btn-danger" onclick="confirmSell(\''+p.id+'\')">💸</button></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function filterSquad(){renderSquad();}
+
+function viewPlayerModal(pid){
+  const p=G.allPlayers.find(x=>x.id===pid);if(!p) return;
+  const club=G.clubs.find(c=>c.id===p.clubId);
+  const ce=p.contractExpiry&&p.contractExpiry<=G.year+1;
+  document.getElementById('modal-container').innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">'+
+    '<h2>'+p.name+'</h2>'+
+    '<div style="display:flex;gap:16px;margin-bottom:16px">'+
+    '<div style="text-align:center"><div class="rating-circle '+(p.rating>=85?'rating-elite':p.rating>=75?'rating-high':p.rating>=65?'rating-mid':'rating-low')+'" style="width:74px;height:74px;font-size:1.6em;margin:0 auto">'+p.rating+'</div><div style="margin-top:6px;font-family:\'Bebas Neue\',sans-serif;font-size:1.1em">'+p.pos+'</div></div>'+
+    '<div style="flex:1">'+
+    '<div class="stat-row"><span>Klub</span><span>'+(club?club.logo+' '+club.name:'Free Agent')+'</span></div>'+
+    '<div class="stat-row"><span>Usia</span><span>'+p.age+'</span></div>'+
+    '<div class="stat-row"><span>Potensi</span><span style="color:var(--purple)">'+p.potential+'</span></div>'+
+    '<div class="stat-row"><span>Gaji</span><span style="color:var(--red)">'+formatMoney(p.wage)+'/mgg</span></div>'+
+    '<div class="stat-row"><span>Nilai</span><span style="color:var(--accent3)">'+formatMoney(p.value)+'</span></div>'+
+    '<div class="stat-row"><span>Kontrak s/d</span><span style="color:'+(ce?'var(--red)':'var(--text2)')+'">'+( p.contractExpiry||2026)+(ce?' ⚠️':'')+'</span></div>'+
+    '</div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Tutup</button>'+
+    (G.myPlayerIds.includes(p.id)?
+      (ce?'<button class="btn btn-warning" onclick="renewContract(\''+p.id+'\');closeModal()">📝 Perpanjang</button>':'')+
+      '<button class="btn btn-danger" onclick="confirmSell(\''+p.id+'\');closeModal()">💸 Jual</button>':
+      '<button class="btn btn-success" onclick="buyPlayer(\''+p.id+'\');closeModal()">✅ Rekrut ('+formatMoney(p.value)+')</button>')+
+    '</div><button class="modal-close" onclick="closeModal()">✕</button></div></div>';
+}
+
+function confirmSell(pid){
+  const p=G.allPlayers.find(x=>x.id===pid);if(!p) return;
+  const price=Math.floor(p.value*(0.85+Math.random()*0.3));
+  document.getElementById('modal-container').innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal"><h2>Jual '+p.name+'?</h2><p style="color:var(--text2);margin-bottom:14px">Penawaran terbaik: <strong style="color:var(--green)">'+formatMoney(price)+'</strong></p><p style="color:var(--text3);font-size:.88em">Rating: '+p.rating+' • Gaji: '+formatMoney(p.wage)+'/mgg • Kontrak: '+( p.contractExpiry||2026)+'</p><div style="display:flex;gap:8px;margin-top:18px"><button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-danger" onclick="sellPlayer(\''+pid+'\');closeModal()">💸 Konfirmasi Jual</button></div></div></div>';
+}
+
+function renderTactics(){
+  const pl=G.allPlayers.filter(p=>G.myPlayerIds.includes(p.id)&&!p.injured).sort((a,b)=>b.rating-a.rating);
+  const formations=['4-4-2','4-3-3','4-2-3-1','3-5-2','5-3-2','4-5-1','3-4-3'];
+  const rows=G.selectedFormation.split('-').map(n=>parseInt(n));rows.unshift(1);
+  let lc=[...G.lineup.slice(0,11)];while(lc.length<11)lc.push(null);
+  const el=document.getElementById('tactics-content');
+  el.innerHTML='<div class="grid-2" style="gap:14px">'+
+    '<div><div class="card" style="margin-bottom:14px"><div class="card-title">⚔️ Formasi</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">'+formations.map(f=>'<button class="formation-btn '+(G.selectedFormation===f?'active':'')+'" onclick="G.selectedFormation=\''+f+'\';renderPage(\'tactics\')">'+f+'</button>').join('')+'</div></div>'+
+    '<div class="pitch"><div class="pitch-line">'+rows.map(cnt=>{const rp=lc.splice(0,cnt);return '<div class="pitch-row">'+rp.map(id=>{const p=G.allPlayers.find(x=>x.id===id);return '<div class="player-token"><div class="pname">'+(p?p.name.split(' ').pop():'—')+'</div><div class="prating">'+(p?p.rating:'?')+'</div></div>';}).join('')+'</div>';}).join('')+'</div></div></div>'+
+    '<div class="card"><div class="card-title">📋 Pemain Cadangan</div><div style="max-height:480px;overflow-y:auto">'+
+    pl.filter(p=>!G.lineup.slice(0,11).includes(p.id)).map(p=>'<div class="player-list-item" onclick="addToLineup(\''+p.id+'\')">'+
+      '<div class="rating-circle '+(p.rating>=85?'rating-elite':p.rating>=75?'rating-high':p.rating>=65?'rating-mid':'rating-low')+'" style="width:34px;height:34px;font-size:.75em">'+p.rating+'</div>'+
+      '<div style="flex:1"><div style="font-weight:700;font-size:.9em">'+p.name+'</div><div style="font-size:.78em;color:var(--text2)">'+p.pos+' • '+p.age+' thn</div></div>'+
+      (p.injured?'<span class="badge badge-red">🚑</span>':'')+
+      '<button class="btn btn-sm btn-success" onclick="event.stopPropagation();addToLineup(\''+p.id+'\')">+ XI</button></div>').join('')+
+    '</div></div></div>';
+}
+function addToLineup(pid){if(!G.lineup.slice(0,11).includes(pid)){if(G.lineup.length>=11)G.lineup.pop();G.lineup.push(pid);saveGame();renderPage('tactics');}}
+
+function renderFinances(){
+  const el=document.getElementById('finances-content');
+  el.innerHTML='<div class="grid-3" style="gap:14px;margin-bottom:14px">'+
+    '<div class="card" style="text-align:center"><div style="font-size:1.8em;color:var(--green);font-family:\'Orbitron\',sans-serif">'+formatMoney(G.finances.balance)+'</div><div style="color:var(--text2);font-size:.9em">Budget Tersedia</div></div>'+
+    '<div class="card" style="text-align:center"><div style="font-size:1.8em;color:var(--red);font-family:\'Orbitron\',sans-serif">-'+formatMoney(G.finances.weeklyWage)+'</div><div style="color:var(--text2);font-size:.9em">Total Gaji/Minggu</div></div>'+
+    '<div class="card" style="text-align:center"><div style="font-size:1.8em;color:var(--accent3);font-family:\'Orbitron\',sans-serif">'+formatMoney(G.managerRating*G.managerRating*200)+'</div><div style="color:var(--text2);font-size:.9em">Gaji Manajer/Minggu</div></div></div>'+
+    '<div class="card"><div class="card-title">💳 Log Transaksi</div><div style="max-height:420px;overflow-y:auto"><table class="table"><thead><tr><th>Pekan</th><th>Keterangan</th><th>Jumlah</th><th>Saldo</th></tr></thead><tbody>'+
+    [...G.finances.log].reverse().map(l=>'<tr><td style="color:var(--text3)">P'+l.week+'</td><td>'+l.desc+'</td><td class="'+(l.amount>=0?'finance-positive':'finance-negative')+'">'+(l.amount>=0?'+':'')+formatMoney(l.amount)+'</td><td>'+formatMoney(l.balance)+'</td></tr>').join('')+'</tbody></table></div></div>';
+}
+
+function renderFixtures(){
+  const el=document.getElementById('fixtures-content');
+  el.innerHTML='<div class="card"><div class="card-title">📅 Jadwal & Hasil</div><div style="overflow-x:auto"><table class="table"><thead><tr><th>Pekan</th><th>Kompetisi</th><th>Tuan Rumah</th><th>Skor</th><th>Tamu</th><th>Hasil</th></tr></thead><tbody>'+
+    G.fixtures.map(f=>{
+      const hc=G.clubs.find(c=>c.id===f.home),ac=G.clubs.find(c=>c.id===f.away);
+      const im=f.home===G.myClubId||f.away===G.myClubId;
+      const mw=f.played&&((f.home===G.myClubId&&f.homeGoals>f.awayGoals)||(f.away===G.myClubId&&f.awayGoals>f.homeGoals));
+      const ml=f.played&&((f.home===G.myClubId&&f.homeGoals<f.awayGoals)||(f.away===G.myClubId&&f.awayGoals<f.homeGoals));
+      return '<tr style="'+(im?'background:rgba(0,212,255,.05)':'')+'">'+
+        '<td style="color:var(--text3)">P'+f.week+'</td>'+
+        '<td><span class="badge '+(f.type==='cup'?'badge-gold':'badge-blue')+'">'+(f.type==='cup'?f.cupName:'Liga')+'</span></td>'+
+        '<td style="font-weight:'+(f.home===G.myClubId?700:400)+'">'+(hc?hc.logo+' '+hc.name:'?')+'</td>'+
+        '<td style="text-align:center;font-family:\'Orbitron\',sans-serif;color:'+(f.played?(mw?'var(--green)':ml?'var(--red)':'var(--accent)'):'var(--text3)')+'">'+(f.played?f.homeGoals+' - '+f.awayGoals:'vs')+'</td>'+
+        '<td style="font-weight:'+(f.away===G.myClubId?700:400)+'">'+(ac?ac.logo+' '+ac.name:'?')+'</td>'+
+        '<td>'+(f.played?'<span class="badge '+(mw?'badge-green':ml?'badge-red':'badge-blue')+'">'+(im?(mw?'M':ml?'K':'S'):'-')+'</span>':'<span class="badge" style="color:var(--text3)">Mendatang</span>')+'</td></tr>';
+    }).join('')+'</tbody></table></div></div>';
+}
+
+function renderLeague(){
+  const club=G.clubs.find(c=>c.id===G.myClubId);
+  const lg=LEAGUES.find(l=>l.id===club?.league);
+  const el=document.getElementById('league-content');
+  el.innerHTML='<div class="card"><div class="card-title">'+(lg?lg.flag+' '+lg.name:'Klasemen')+'</div><div style="overflow-x:auto"><table class="table league-table"><thead><tr><th>#</th><th colspan="2">Klub</th><th>M</th><th>M</th><th>S</th><th>K</th><th>GM</th><th>GK</th><th>SG</th><th>Pts</th></tr></thead><tbody>'+
+    G.leagueTable.map((t,i)=>{const c=G.clubs.find(x=>x.id===t.clubId);const im=t.clubId===G.myClubId;return '<tr class="'+(im?'my-club':'')+'"><td style="font-weight:700;color:'+(i<4?'var(--accent3)':i<6?'var(--accent)':i>G.leagueTable.length-4?'var(--red)':'var(--text3)')+'">'+(i+1)+'</td><td>'+(c?c.logo:'?')+'</td><td style="font-weight:700">'+t.name+(im?' 🎖️':'')+'</td><td>'+t.p+'</td><td style="color:var(--green)">'+t.w+'</td><td>'+t.d+'</td><td style="color:var(--red)">'+t.l+'</td><td>'+t.gf+'</td><td>'+t.ga+'</td><td style="color:'+(t.gd>=0?'var(--green)':'var(--red)')+'">'+(t.gd>=0?'+':'')+t.gd+'</td><td style="font-family:\'Orbitron\',sans-serif;font-weight:700;color:var(--accent3)">'+t.pts+'</td></tr>';}).join('')+
+    '</tbody></table></div><div style="margin-top:10px;font-size:.78em;color:var(--text3)"><span style="color:var(--accent3)">■</span> Top 4: CL &nbsp;<span style="color:var(--accent)">■</span> Top 6: EL &nbsp;<span style="color:var(--red)">■</span> Degradasi</div></div>';
+}
+
+function renderTournaments(){
+  const el=document.getElementById('tournaments-content');
+  el.innerHTML='<div class="grid-2" style="gap:14px">'+TOURNAMENTS.map(t=>{
+    const lw=G.tournamentCooldowns[t.id]||0;const onCD=G.season-lw<t.cooldown&&lw>0;const canE=G.myClub.rating>=t.minRating-10;
+    return '<div class="card"><div style="display:flex;gap:10px;align-items:center;margin-bottom:12px"><div style="font-size:2.2em">'+t.logo+'</div><div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.2em">'+t.name+'</div><div style="color:var(--green);font-size:.88em">Hadiah: '+formatMoney(t.prize)+'</div><div style="color:var(--text2);font-size:.8em">Min Rating: '+t.minRating+'</div></div></div>'+
+    (G.trophies.some(tr=>tr.name.includes(t.name))?'<span class="badge badge-gold" style="display:inline-block;margin-bottom:8px">🏆 Pernah Menang</span>':'')+
+    (onCD?'<div style="color:var(--text3);font-size:.85em">⏳ Cooldown aktif</div>':canE?'<button class="btn btn-primary btn-sm" onclick="enterTournament(\''+t.id+'\')">🏆 Ikut Turnamen</button>':'<div style="color:var(--text3);font-size:.85em">❌ Rating kurang ('+G.myClub.rating+'/'+t.minRating+')</div>')+'</div>';
+  }).join('')+'</div>';
+}
+
+function renderTransfer(){
+  if(!G.transferMarket.length) generateTransferMarket();
+  const av=G.transferMarket.filter(p=>!G.myPlayerIds.includes(p.id));
+  const el=document.getElementById('transfer-content');
+  el.innerHTML='<div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">'+
+    '<input class="search-input" id="tf-s" placeholder="🔍 Cari..." oninput="filterTransfer()" style="width:180px">'+
+    '<select id="tf-p" onchange="filterTransfer()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:\'Rajdhani\',sans-serif"><option value="">Semua Posisi</option><option>GK</option><option>CB</option><option>LB</option><option>RB</option><option>CDM</option><option>CM</option><option>CAM</option><option>LW</option><option>RW</option><option>ST</option></select>'+
+    '<select id="tf-r" onchange="filterTransfer()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:\'Rajdhani\',sans-serif"><option value="0">Semua Rating</option><option value="80">80+</option><option value="75">75+</option><option value="70">70+</option><option value="65">65+</option></select></div>'+
+    '<div style="overflow-x:auto"><table class="table"><thead><tr><th>Pemain</th><th>Pos</th><th>Usia</th><th>Rtg</th><th>Klub</th><th>Harga</th><th>Gaji/mgg</th><th>Kontrak</th><th>Aksi</th></tr></thead><tbody id="tf-body">'+
+    av.map(p=>{const c=G.clubs.find(x=>x.id===p.clubId);const ca=G.finances.balance>=p.askPrice;return '<tr><td style="font-weight:700">'+p.name+'</td><td><span class="badge badge-blue">'+p.pos+'</span></td><td>'+p.age+'</td><td><div class="rating-circle '+(p.rating>=85?'rating-elite':p.rating>=75?'rating-high':p.rating>=65?'rating-mid':'rating-low')+'" style="width:32px;height:32px;font-size:.75em">'+p.rating+'</div></td><td>'+(c?c.logo+' '+c.name:'FA')+'</td><td style="color:'+(ca?'var(--text)':'var(--red)')+'">'+formatMoney(p.askPrice)+'</td><td>'+formatMoney(p.wage)+'</td><td>'+(p.contractExpiry||2026)+'</td><td style="display:flex;gap:4px"><button class="btn btn-sm btn-secondary" onclick="viewPlayerModal(\''+p.id+'\')">👁️</button><button class="btn btn-sm '+(ca?'btn-success':'btn-secondary')+'" onclick="buyPlayer(\''+p.id+'\')">'+(ca?'✅ Rekrut':'💸')+'</button></td></tr>';}).join('')+
+    '</tbody></table></div>';
+}
+function filterTransfer(){
+  const s=(document.getElementById('tf-s')?.value||'').toLowerCase(),pos=document.getElementById('tf-p')?.value||'',mr=parseInt(document.getElementById('tf-r')?.value||0);
+  const tb=document.getElementById('tf-body');if(!tb) return;
+  const av=G.transferMarket.filter(p=>!G.myPlayerIds.includes(p.id)&&(!s||p.name.toLowerCase().includes(s))&&(!pos||p.pos.includes(pos))&&p.rating>=mr);
+  tb.innerHTML=av.map(p=>{const c=G.clubs.find(x=>x.id===p.clubId);const ca=G.finances.balance>=p.askPrice;return '<tr><td style="font-weight:700">'+p.name+'</td><td><span class="badge badge-blue">'+p.pos+'</span></td><td>'+p.age+'</td><td><div class="rating-circle '+(p.rating>=85?'rating-elite':p.rating>=75?'rating-high':p.rating>=65?'rating-mid':'rating-low')+'" style="width:32px;height:32px;font-size:.75em">'+p.rating+'</div></td><td>'+(c?c.logo+' '+c.name:'FA')+'</td><td style="color:'+(ca?'var(--text)':'var(--red)')+'">'+formatMoney(p.askPrice)+'</td><td>'+formatMoney(p.wage)+'</td><td>'+(p.contractExpiry||2026)+'</td><td style="display:flex;gap:4px"><button class="btn btn-sm btn-secondary" onclick="viewPlayerModal(\''+p.id+'\')">👁️</button><button class="btn btn-sm '+(ca?'btn-success':'btn-secondary')+'" onclick="buyPlayer(\''+p.id+'\')">'+(ca?'✅':'💸')+'</button></td></tr>';}).join('');
+}
+
+function renderScout(){
+  const tp=[...G.allPlayers].filter(p=>!G.myPlayerIds.includes(p.id)).sort((a,b)=>b.potential-a.potential).slice(0,30);
+  const el=document.getElementById('scout-content');
+  el.innerHTML='<div class="card" style="margin-bottom:14px"><div class="card-title">🔍 Jaringan Scout</div>'+
+    '<div style="display:flex;gap:12px;margin-top:10px">'+
+    '<div style="background:var(--bg3);border-radius:8px;padding:12px;flex:1;text-align:center"><div style="font-size:1.6em">🌍</div><div style="font-weight:700">'+G.clubs.length+'</div><div style="font-size:.78em;color:var(--text2)">Klub</div></div>'+
+    '<div style="background:var(--bg3);border-radius:8px;padding:12px;flex:1;text-align:center"><div style="font-size:1.6em">👁️</div><div style="font-weight:700">'+G.allPlayers.length+'</div><div style="font-size:.78em;color:var(--text2)">DB Pemain</div></div>'+
+    '<div style="background:var(--bg3);border-radius:8px;padding:12px;flex:1;text-align:center"><div style="font-size:1.6em">⭐</div><div style="font-weight:700">'+tp.filter(p=>p.potential>=85).length+'</div><div style="font-size:.78em;color:var(--text2)">Bakat Elite</div></div></div></div>'+
+    '<div class="card"><div class="card-title">⭐ Top Bakat (Potensi Tertinggi)</div>'+
+    '<table class="table"><thead><tr><th>#</th><th>Pemain</th><th>Pos</th><th>Usia</th><th>Rating</th><th>Potensi</th><th>Klub</th><th>Nilai</th><th>Aksi</th></tr></thead><tbody>'+
+    tp.map((p,i)=>{const c=G.clubs.find(x=>x.id===p.clubId);return '<tr><td style="color:var(--text3)">'+(i+1)+'</td><td style="font-weight:700">'+p.name+'</td><td><span class="badge badge-blue">'+p.pos+'</span></td><td>'+p.age+'</td><td>'+p.rating+'</td><td style="color:var(--purple);font-weight:700">'+p.potential+'</td><td>'+(c?c.logo+' '+c.name:'FA')+'</td><td>'+formatMoney(p.value)+'</td><td><button class="btn btn-sm btn-secondary" onclick="viewPlayerModal(\''+p.id+'\')">👁️</button></td></tr>';}).join('')+
+    '</tbody></table></div>';
+}
+
+function renderManager(){
+  const el=document.getElementById('manager-content');
+  el.innerHTML='<div class="grid-2" style="gap:14px">'+
+    '<div class="card"><div style="text-align:center;margin-bottom:18px"><div class="rating-circle '+(G.managerRating>85?'rating-elite':G.managerRating>70?'rating-high':G.managerRating>55?'rating-mid':'rating-low')+'" style="width:90px;height:90px;font-size:1.8em;margin:0 auto 10px">'+G.managerRating.toFixed(0)+'</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.8em">'+G.managerName+'</div><div style="color:var(--text2);font-size:.9em">'+G.managerNation+' • Musim '+G.season+'</div><div style="color:var(--accent3);margin-top:4px;font-size:.9em">'+G.myClub.logo+' '+G.myClub.name+'</div></div>'+
+    '<div class="stat-row"><span>Rating</span><span style="color:var(--accent3);font-weight:700">'+G.managerRating.toFixed(1)+'/99</span></div>'+
+    '<div class="stat-bar" style="margin:4px 0 12px"><div class="stat-bar-fill" style="width:'+G.managerRating+'%;background:linear-gradient(90deg,var(--accent),var(--accent3))"></div></div>'+
+    '<div class="stat-row"><span>Gaji/Minggu</span><span style="color:var(--green);font-weight:700">'+formatMoney(G.managerRating*G.managerRating*200)+'</span></div>'+
+    '<div class="stat-row"><span>Kesulitan</span><span style="text-transform:capitalize">'+G.difficulty+'</span></div>'+
+    '<div class="stat-row"><span>Akun</span><span style="color:var(--accent)">👤 '+currentUser+'</span></div></div>'+
+    '<div class="card"><div class="card-title">📊 Statistik Karir</div>'+
+    '<div class="stat-row"><span>Total Laga</span><span>'+(G.stats.wins+G.stats.draws+G.stats.losses)+'</span></div>'+
+    '<div class="stat-row"><span>Menang</span><span style="color:var(--green)">'+G.stats.wins+'</span></div>'+
+    '<div class="stat-row"><span>Seri</span><span>'+G.stats.draws+'</span></div>'+
+    '<div class="stat-row"><span>Kalah</span><span style="color:var(--red)">'+G.stats.losses+'</span></div>'+
+    '<div class="stat-row"><span>Win Rate</span><span style="color:var(--accent3)">'+(G.stats.wins+G.stats.draws+G.stats.losses>0?Math.round(G.stats.wins/(G.stats.wins+G.stats.draws+G.stats.losses)*100):0)+'%</span></div>'+
+    '<div class="stat-row"><span>Gol Dibuat</span><span style="color:var(--green)">'+G.stats.goalsFor+'</span></div>'+
+    '<div class="stat-row"><span>Gol Kebobolan</span><span style="color:var(--red)">'+G.stats.goalsAgainst+'</span></div>'+
+    '<div class="stat-row"><span>Trofi</span><span style="color:var(--accent3)">🏆 '+G.trophies.length+'</span></div></div></div>'+
+    (G.trophies.length>0?'<div class="card" style="margin-top:14px"><div class="card-title">🏆 Lemari Trofi</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">'+G.trophies.map(t=>'<div class="trophy-card"><div style="font-size:2em">'+t.icon+'</div><div style="font-size:.78em;margin-top:4px">'+t.name+'</div></div>').join('')+'</div></div>':'');
+}
+
+function renderOffers(){
+  const el=document.getElementById('offers-content');
+  el.innerHTML='<div class="card"><div class="card-title">📩 Tawaran Pekerjaan</div>'+
+    (G.offers.length===0?'<div style="text-align:center;padding:36px;color:var(--text3)"><div style="font-size:3em">📭</div><div style="margin-top:8px">Belum ada tawaran. Terus menang!</div></div>':'')+
+    G.offers.map(o=>{const c=G.clubs.find(x=>x.id===o.clubId);return '<div class="offer-card"><div style="display:flex;align-items:center;gap:14px"><div style="font-size:2.8em">'+o.clubLogo+'</div><div style="flex:1"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4em">'+o.clubName+'</div><div style="color:var(--text2)">Rating Klub: '+(c?c.rating:'?')+'</div><div style="color:var(--accent3);font-size:1.05em;margin-top:3px">💰 '+formatMoney(o.offeredWage)+'/minggu</div><div style="color:var(--text3);font-size:.82em">Batas: Pekan '+o.deadline+'</div></div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-success btn-sm" onclick="acceptOffer(\''+o.id+'\')">✅ Terima</button><button class="btn btn-danger btn-sm" onclick="declineOffer(\''+o.id+'\')">❌ Tolak</button></div></div></div>';}).join('')+
+    '</div>';
+  const b=document.getElementById('offer-badge');if(b){b.style.display=G.offers.length?'inline':'none';b.textContent=G.offers.length;}
+}
+
+function renderAllClubs(){
+  const el=document.getElementById('clubs-content');
+  const grouped={};
+  G.clubs.forEach(c=>{if(!grouped[c.league])grouped[c.league]=[];grouped[c.league].push(c);});
+  el.innerHTML='<div style="margin-bottom:14px"><input class="search-input" id="ac-s" placeholder="🔍 Cari klub..." oninput="filterAllClubs()" style="width:260px"></div><div id="ac-list">'+
+    Object.entries(grouped).map(([lid,clubs])=>{const lg=LEAGUES.find(l=>l.id===lid);return '<div style="margin-bottom:18px"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.2em;color:var(--accent);margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border)">'+(lg?lg.flag+' '+lg.name:lid)+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">'+clubs.map(c=>'<div class="club-card" onclick="viewClubModal(\''+c.id+'\')"><div style="display:flex;align-items:center;gap:8px"><div style="font-size:1.8em">'+c.logo+'</div><div><div style="font-weight:700;font-size:.9em">'+c.name+'</div><div style="font-size:.76em;color:var(--text3)">'+c.country+'</div><div style="font-size:.76em;color:var(--accent3)">'+getRatingStars(c.rating)+'</div></div></div></div>').join('')+'</div></div>';}).join('')+'</div>';
+}
+function filterAllClubs(){
+  const s=(document.getElementById('ac-s')?.value||'').toLowerCase();
+  const el=document.getElementById('ac-list');if(!el) return;
+  if(!s){renderAllClubs();return;}
+  const f=G.clubs.filter(c=>c.name.toLowerCase().includes(s)||c.country.toLowerCase().includes(s));
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">'+f.map(c=>'<div class="club-card" onclick="viewClubModal(\''+c.id+'\')"><div style="display:flex;align-items:center;gap:8px"><div style="font-size:1.8em">'+c.logo+'</div><div><div style="font-weight:700;font-size:.9em">'+c.name+'</div><div style="font-size:.76em;color:var(--text3)">'+c.country+'</div></div></div></div>').join('')+'</div>';
+}
+function viewClubModal(cid){
+  const c=G.clubs.find(x=>x.id===cid);if(!c) return;
+  const lg=LEAGUES.find(l=>l.id===c.league);
+  const pl=G.allPlayers.filter(p=>p.clubId===cid).sort((a,b)=>b.rating-a.rating).slice(0,10);
+  document.getElementById('modal-container').innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">'+
+    '<h2>'+c.logo+' '+c.name+'</h2>'+
+    '<div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px">'+
+    '<div class="stat-row"><span>Liga</span><span>'+(lg?lg.flag+' '+lg.name:c.league)+'</span></div>'+
+    '<div class="stat-row"><span>Negara</span><span>'+c.country+'</span></div>'+
+    '<div class="stat-row"><span>Stadion</span><span>'+c.stadium+' ('+(c.capacity||0).toLocaleString()+')</span></div>'+
+    '<div class="stat-row"><span>Rating</span><span style="color:var(--accent3)">'+getRatingStars(c.rating)+' ('+c.rating+')</span></div>'+
+    '<div class="stat-row"><span>Budget</span><span style="color:var(--green)">'+formatMoney(c.budget)+'</span></div></div>'+
+    '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.1em;color:var(--accent);margin-bottom:8px">Skuad Utama</div>'+
+    '<div style="max-height:200px;overflow-y:auto"><table class="table"><thead><tr><th>Pemain</th><th>Pos</th><th>Rating</th></tr></thead><tbody>'+pl.map(p=>'<tr><td style="font-weight:700">'+p.name+'</td><td><span class="badge badge-blue">'+p.pos+'</span></td><td style="color:var(--accent3)">'+p.rating+'</td></tr>').join('')+'</tbody></table></div>'+
+    '<button class="btn btn-secondary" onclick="closeModal()" style="margin-top:14px">Tutup</button>'+
+    '<button class="modal-close" onclick="closeModal()">✕</button></div></div>';
+}
+
+function renderNews(){
+  const el=document.getElementById('news-content');
+  el.innerHTML='<div class="card"><div class="card-title">📰 Berita</div>'+([...G.news].reverse().map(n=>'<div class="news-item"><div class="news-date">Pekan '+n.week+' · Musim '+n.season+'</div><div style="margin-top:3px">'+n.text+'</div></div>').join('')||'<div style="color:var(--text3);text-align:center;padding:20px">Belum ada berita.</div>')+'</div>';
+}
+
+function renderHelp(){
+  document.getElementById('help-content').innerHTML='<div class="card"><div class="card-title">❓ Panduan Main</div>'+
+    '<div style="line-height:1.9;color:var(--text2)">'+
+    '<h3 style="color:var(--accent);margin:14px 0 6px">🌐 Multiplayer Liga Online</h3>'+
+    '<div style="background:var(--bg3);border-radius:8px;padding:14px;color:var(--text)">'+
+    '<p><strong style="color:var(--accent3)">Mode Lokal</strong> (default): Buat liga → bagikan kode → teman join di browser yang sama (beda tab/beda akun). Langsung jalan tanpa setup!</p>'+
+    '<p style="margin-top:8px"><strong style="color:var(--accent3)">Mode Firebase</strong> (lintas perangkat): Isi <code style="background:var(--bg);padding:1px 5px;border-radius:4px">FIREBASE_CONFIG</code> di script HTML. Ikuti langkah di Help → Firebase Setup.</p>'+
+    '<p style="margin-top:8px;color:var(--accent)">👉 Cara dapat Firebase config gratis: console.firebase.google.com → New Project → Realtime Database → Create → Test Mode → Project Settings → Web App (&lt;/&gt;) → copy firebaseConfig</p>'+
+    '</div>'+
+    '<h3 style="color:var(--accent);margin:14px 0 6px">⚽ Cara Main</h3>'+
+    '<ul style="list-style:none;padding:0"><li>1. Login/Register → Pilih atau buat klub</li><li>2. Klik <strong style="color:var(--accent)">⏩ Pekan Berikutnya</strong> untuk simulasi laga</li><li>3. Beli/jual pemain di Transfer Market</li><li>4. Ikut Turnamen untuk hadiah besar</li><li>5. Buat/join Liga Multiplayer bersama teman!</li></ul>'+
+    '<h3 style="color:var(--accent);margin:14px 0 6px">🎖️ Rating Manajer</h3>'+
+    '<p>Menang: +2 • Seri: +0.5 • Kalah: -1 • Juara Turnamen: +8 • Juara Liga: +5</p>'+
+    '</div></div>';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function hideAllPages(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));}
+function showPage(pg){
+  if(!G.initialized&&!['help','multiplayer'].includes(pg)) return;
+  hideAllPages();
+  const pe=document.getElementById('page-'+pg);const ne=document.getElementById('nav-'+pg);
+  if(pe) pe.classList.add('active');if(ne) ne.classList.add('active');
+  renderPage(pg);
+}
+function renderPage(pg){
+  switch(pg){
+    case 'dashboard':renderDashboard();break;case 'squad':renderSquad();break;case 'tactics':renderTactics();break;
+    case 'finances':renderFinances();break;case 'fixtures':renderFixtures();break;case 'league':renderLeague();break;
+    case 'tournaments':renderTournaments();break;case 'transfer':renderTransfer();break;case 'scout':renderScout();break;
+    case 'manager':renderManager();break;case 'offers':renderOffers();break;case 'clubs':renderAllClubs();break;
+    case 'news':renderNews();break;case 'help':renderHelp();break;case 'multiplayer':renderMultiplayer();break;
+  }
+}
+
+// ============================================================
+// SAVE / LOAD
+// ============================================================
+function saveGame(){if(!currentUser) return;try{localStorage.setItem(getSaveKey(),JSON.stringify(G));}catch(e){console.warn('Save gagal:',e);}}
+function loadSaveGame(){
+  if(!currentUser) return;
+  const s=localStorage.getItem(getSaveKey());
+  if(!s){showNotif('Tidak ada save game!','error');return;}
+  try{const d=JSON.parse(s);Object.assign(G,d);document.getElementById('welcome-screen').style.display='none';showPage('dashboard');renderTopbar();showNotif('Game dimuat! Welcome back, '+G.managerName+'!','success');}
+  catch(e){showNotif('Gagal load save!','error');}
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function formatMoney(n){if(!n) return '€0';const a=Math.abs(n),sg=n<0?'-':'';if(a>=1e9) return sg+'€'+(a/1e9).toFixed(1)+'B';if(a>=1e6) return sg+'€'+(a/1e6).toFixed(1)+'M';if(a>=1e3) return sg+'€'+(a/1e3).toFixed(0)+'K';return sg+'€'+a.toFixed(0);}
+function formatFans(n){if(!n) return '0';if(n>=1e6) return (n/1e6).toFixed(1)+'M';if(n>=1e3) return (n/1e3).toFixed(0)+'K';return n.toString();}
+function getRatingStars(r){if(r>=90)return '★★★★★';if(r>=80)return '★★★★☆';if(r>=70)return '★★★☆☆';if(r>=60)return '★★☆☆☆';return '★☆☆☆☆';}
+function addNews(text,cat){G.news.push({text,cat:cat||'general',week:G.week,season:G.season});if(G.news.length>200) G.news.shift();}
+function showNotif(msg,type){const el=document.createElement('div');el.className='notif-item '+(type||'info');el.textContent=msg;document.getElementById('notif').appendChild(el);setTimeout(()=>el.remove(),4000);}
+
+window.onload=initGame;
+window.onbeforeunload=()=>{if(G.initialized) saveGame();};
+</script>
+</body>
+</html>
